@@ -60,4 +60,19 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="event_saved">Event saved: this clip and the previous one are kept</string>
+    <string name="phone_link">Phone link</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="bluetooth_on">On</string>
+    <string name="bluetooth_off">Off</string>
+    <string name="open_android_auto">Open Android Auto</string>
+    <string name="phone_link_hint">Needs Headunit Reloaded (gb.xxy.hr) + a WiFi hotspot.</string>
+    <string name="updates">Updates</string>
+    <string name="version_label">Version</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_up_to_date">Up to date</string>
+    <string name="update_downloading">Downloading %1$s…</string>
+    <string name="update_installing">Installing…</string>
+    <string name="update_installed">Updated to %1$s</string>
+    <string name="update_failed">Failed: %1$s</string>
 </resources>

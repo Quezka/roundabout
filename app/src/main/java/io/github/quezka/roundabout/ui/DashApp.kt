@@ -38,6 +38,7 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
     val autoRec by vm.autoRecord.collectAsStateWithLifecycle()
     val themeMode by vm.themeMode.collectAsStateWithLifecycle()
     val btEnabled by vm.btEnabled.collectAsStateWithLifecycle()
+    val updateState by vm.update.collectAsStateWithLifecycle()
     val recording by DashcamService.recording.collectAsStateWithLifecycle()
     val lenses by DashcamService.lenses.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -105,6 +106,8 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
             btEnabled = btEnabled,
             onBluetooth = vm::setBluetooth,
             onAndroidAuto = vm::openAndroidAuto,
+            updateState = updateState,
+            onCheckUpdates = vm::checkUpdates,
         )
         Screen.CLIPS -> {
             val clips by vm.clips.collectAsStateWithLifecycle()

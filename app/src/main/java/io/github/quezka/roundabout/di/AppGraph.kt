@@ -33,6 +33,7 @@ class AppGraph(context: Context) {
     val apps: AppSource = PackageAppSource(app)
     val launcher: AppLauncher = IntentAppLauncher(app)
     val bt: BluetoothLink = BluetoothLink(app)
+    val updater: io.github.quezka.roundabout.data.Updater = io.github.quezka.roundabout.data.Updater(app)
     val speed: SpeedSource = GpsSpeedSource(app)
     val power: PowerSource = BatteryPowerSource(app)
     private val shared = SharedDashPrefs(app)

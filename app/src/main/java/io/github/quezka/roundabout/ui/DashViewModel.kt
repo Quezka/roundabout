@@ -14,6 +14,8 @@ import io.github.quezka.roundabout.domain.Role
 import io.github.quezka.roundabout.domain.RoleDefaults
 import io.github.quezka.roundabout.domain.Speed
 import io.github.quezka.roundabout.domain.ThemeMode
+import io.github.quezka.roundabout.domain.UpdateState
+import io.github.quezka.roundabout.domain.UpdateVersion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -28,6 +30,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DashViewModel(private val graph: AppGraph) : ViewModel() {
@@ -91,6 +94,24 @@ class DashViewModel(private val graph: AppGraph) : ViewModel() {
     val btEnabled: StateFlow<Boolean> = graph.bt.state().stateIn(viewModelScope, live, graph.bt.isEnabled())
     fun setBluetooth(on: Boolean) { graph.bt.setEnabled(on) }
     fun openAndroidAuto() { graph.launcher.launchPackage("gb.xxy.hr") }
+
+    private val _update = MutableStateFlow<UpdateState>(UpdateState.Idle)
+    val update: StateFlow<UpdateState> = _update
+    val appVersion: String = graph.updater.currentVersion()
+    fun checkUpdates() {
+        if (_update.value is UpdateState.Checking || _update.value is UpdateState.Downloading || _update.value is UpdateState.Installing) return
+        _update.value = UpdateState.Checking
+        viewModelScope.launch(Dispatchers.IO) {
+            val u = graph.updater.check()
+            if (u == null) { _update.value = UpdateState.UpToDate; return@launch }
+            if (!UpdateVersion.isNewer(u.tag, graph.updater.currentVersion())) { _update.value = UpdateState.UpToDate; return@launch }
+            _update.value = UpdateState.Downloading(u.tag)
+            val apk = graph.updater.download(u)
+            if (apk == null) { _update.value = UpdateState.Failed("download failed"); return@launch }
+            _update.value = UpdateState.Installing(u.tag)
+            _update.value = if (graph.updater.install(apk)) UpdateState.Installed(u.tag) else UpdateState.Failed("install failed")
+        }
+    }
     fun setAutoRecord(on: Boolean) = graph.dashcamPrefs.setAutoRecord(on)
 
     private val clipRefresh = MutableStateFlow(0)

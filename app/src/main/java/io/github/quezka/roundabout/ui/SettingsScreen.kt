@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import io.github.quezka.roundabout.R
 import io.github.quezka.roundabout.domain.Ambient
 import io.github.quezka.roundabout.domain.ThemeMode
+import io.github.quezka.roundabout.domain.UpdateState
 
 @Composable
 fun SettingsScreen(
@@ -60,6 +61,8 @@ fun SettingsScreen(
     btEnabled: Boolean = false,
     onBluetooth: (Boolean) -> Unit = {},
     onAndroidAuto: () -> Unit = {},
+    updateState: UpdateState = UpdateState.Idle,
+    onCheckUpdates: () -> Unit = {},
 ) {
     val cs = MaterialTheme.colorScheme
     Column(
@@ -126,25 +129,43 @@ fun SettingsScreen(
                 modifier = Modifier.padding(top = 12.dp))
         }
         Section {
-            Text("Phone link", color = cs.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.phone_link), color = cs.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(14.dp))
             ListItem(
-                headlineContent = { Text("Bluetooth", fontSize = 21.sp, fontWeight = FontWeight.SemiBold) },
+                headlineContent = { Text(stringResource(R.string.bluetooth), fontSize = 21.sp, fontWeight = FontWeight.SemiBold) },
+                supportingContent = {
+                    Text(stringResource(if (btEnabled) R.string.bluetooth_on else R.string.bluetooth_off),
+                        fontSize = 15.sp, color = cs.onSurfaceVariant)
+                },
                 trailingContent = { Switch(btEnabled, onBluetooth, Modifier.testTag("bt")) },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
             )
-            Spacer(Modifier.height(10.dp))
-            Button(onAndroidAuto, Modifier.fillMaxWidth().height(60.dp).testTag("android_auto"), shape = RoundedCornerShape(30.dp)) {
-                Text("Open Android Auto", fontSize = 19.sp, fontWeight = FontWeight.Bold)
-            }
-            Text("Needs Headunit Reloaded (gb.xxy.hr) + WiFi hotspot.", color = cs.onSurfaceVariant, fontSize = 15.sp,
-                modifier = Modifier.padding(top = 12.dp))
+            Line(stringResource(R.string.open_android_auto), onAndroidAuto)
+            Text(stringResource(R.string.phone_link_hint), color = cs.onSurfaceVariant, fontSize = 15.sp,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp))
         }
         Section {
             Line(stringResource(R.string.system_settings), onSystemSettings)
             Line(stringResource(R.string.notification_access), onNotificationAccess)
             Text(stringResource(R.string.roles_hint), color = cs.onSurfaceVariant, fontSize = 17.sp, modifier = Modifier.padding(16.dp))
         }
-        Text("Roundabout $version", color = cs.outline, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp, start = 8.dp))
+        Section {
+            Text(stringResource(R.string.updates), color = cs.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(14.dp))
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.version_label), fontSize = 21.sp, fontWeight = FontWeight.SemiBold) },
+                supportingContent = { Text(version, fontSize = 15.sp, color = cs.onSurfaceVariant) },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+            androidx.compose.material3.FilledTonalButton(
+                onCheckUpdates,
+                Modifier.fillMaxWidth().height(60.dp).testTag("check_updates"),
+                shape = RoundedCornerShape(30.dp),
+                enabled = updateState !is UpdateState.Checking && updateState !is UpdateState.Downloading && updateState !is UpdateState.Installing,
+            ) {
+                Text(updateLabel(updateState), fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }
 
@@ -173,4 +194,15 @@ private fun Line(label: String, onClick: () -> Unit) {
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         modifier = Modifier.clip(RoundedCornerShape(18.dp)).clickable(onClick = onClick),
     )
+}
+
+@Composable
+private fun updateLabel(s: UpdateState): String = when (s) {
+    is UpdateState.Idle -> stringResource(R.string.check_for_updates)
+    is UpdateState.Checking -> stringResource(R.string.update_checking)
+    is UpdateState.UpToDate -> stringResource(R.string.update_up_to_date)
+    is UpdateState.Downloading -> stringResource(R.string.update_downloading, s.tag)
+    is UpdateState.Installing -> stringResource(R.string.update_installing)
+    is UpdateState.Installed -> stringResource(R.string.update_installed, s.tag)
+    is UpdateState.Failed -> stringResource(R.string.update_failed, s.reason)
 }
