@@ -7,7 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.core.view.WindowCompat
@@ -22,11 +22,12 @@ class MainActivity : ComponentActivity() {
     private val vm: DashViewModel by viewModels {
         viewModelFactory { initializer { DashViewModel(AppGraph.get(applicationContext)) } }
     }
-    private val homePresses = mutableIntStateOf(0)
+    private val request = mutableStateOf(0 to Screen.DASH)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         KeyguardService.start(this)
+        RailService.start(this)
         // car dash -> screen stays on while dash shown
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -37,13 +38,17 @@ class MainActivity : ComponentActivity() {
         val version = packageManager.getPackageInfo(packageName, 0).versionName ?: ""
         setContent {
             val ambient by vm.ambient.collectAsStateWithLifecycle()
-            RoundaboutTheme(Color(ambient.argb)) { DashApp(vm, version, homePresses.intValue) }
+            RoundaboutTheme(Color(ambient.argb)) { DashApp(vm, version, request.value) }
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.hasCategory(Intent.CATEGORY_HOME)) homePresses.intValue++
+        val target = when (intent.getStringExtra(RailService.EXTRA_SCREEN)) {
+            RailService.SCREEN_APPS -> Screen.APPS
+            else -> Screen.DASH
+        }
+        request.value = (request.value.first + 1) to target
     }
 
     override fun onResume() {

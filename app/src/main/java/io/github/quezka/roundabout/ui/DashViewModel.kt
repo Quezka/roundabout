@@ -9,7 +9,6 @@ import io.github.quezka.roundabout.domain.AppEntry
 import io.github.quezka.roundabout.domain.Favorites
 import io.github.quezka.roundabout.domain.MediaAction
 import io.github.quezka.roundabout.domain.MediaState
-import io.github.quezka.roundabout.domain.PowerState
 import io.github.quezka.roundabout.domain.Role
 import io.github.quezka.roundabout.domain.RoleDefaults
 import io.github.quezka.roundabout.domain.Speed
@@ -37,7 +36,8 @@ class DashViewModel(private val graph: AppGraph) : ViewModel() {
         while (true) {
             val t = System.currentTimeMillis()
             emit(t)
-            delay(1_000 - t % 1_000)
+            // 1/min <- only date + greeting shown ; less cpu
+            delay(60_000 - t % 60_000)
         }
     }.stateIn(viewModelScope, live, System.currentTimeMillis())
 
@@ -48,8 +48,6 @@ class DashViewModel(private val graph: AppGraph) : ViewModel() {
             emit(null)
         }
         .stateIn(viewModelScope, live, null)
-
-    val power: StateFlow<PowerState?> = graph.power.state().stateIn(viewModelScope, live, null)
 
     val ambient: StateFlow<Ambient> = graph.prefs.ambient().stateIn(viewModelScope, live, Ambient.ORANGE)
 

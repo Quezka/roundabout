@@ -9,7 +9,6 @@ import io.github.quezka.roundabout.domain.Ambient
 import io.github.quezka.roundabout.domain.AppEntry
 import io.github.quezka.roundabout.domain.MediaAction
 import io.github.quezka.roundabout.domain.MediaState
-import io.github.quezka.roundabout.domain.PowerState
 import io.github.quezka.roundabout.ui.AppsScreen
 import io.github.quezka.roundabout.ui.DashIntent
 import io.github.quezka.roundabout.ui.DashScreen
@@ -29,24 +28,20 @@ class ScreensTest {
     @get:Rule val rule = createComposeRule()
 
     private fun ui(media: MediaState = MediaState("Song A", "Band", true, "p"), access: Boolean = true) = DashUi(
-        time = "12:34", date = "Thursday 19 November", greeting = "Hi", speedKmh = 47,
-        power = PowerState(80, true), media = media,
-        mediaAccess = access, navigation = AppEntry("nav", "nav.Main", "Maps"), music = null,
-        favorites = listOf(AppEntry("fav", "fav.Main", "Radio")), player = null,
+        date = "Thursday 19 November", greeting = "Hi", speedKmh = 47, media = media,
+        mediaAccess = access, navigation = AppEntry("nav", "nav.Main", "Maps"), music = null, player = null,
     )
 
     @Test fun dashShowsClockSpeedMedia() {
         val got = mutableListOf<DashIntent>()
         rule.setContent { RoundaboutTheme { DashScreen(ui(), { _, _, _ -> null }) { got += it } } }
-        rule.onNodeWithText("12:34").assertIsDisplayed()
+        rule.onNodeWithText("Hi").assertIsDisplayed()
         rule.onNodeWithText("47").assertIsDisplayed()
         rule.onNodeWithText("Song A").assertIsDisplayed()
-        rule.onNodeWithText("80%").assertIsDisplayed()
         rule.onNodeWithText("Navigate · Maps").assertIsDisplayed()
         rule.onNodeWithTag("navigate").performClick()
-        rule.onNode(androidx.compose.ui.test.hasContentDescription("Apps")).performClick()
-        rule.onNode(androidx.compose.ui.test.hasContentDescription("Radio")).performClick()
-        assertEquals(listOf(DashIntent.Navigate, DashIntent.Apps, DashIntent.Launch(AppEntry("fav", "fav.Main", "Radio"))), got)
+        rule.onNode(androidx.compose.ui.test.hasContentDescription("Settings")).performClick()
+        assertEquals(listOf(DashIntent.Navigate, DashIntent.Settings), got)
     }
 
     @Test fun dashAsksForMediaAccess() {

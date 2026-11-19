@@ -48,88 +48,39 @@ import io.github.quezka.roundabout.R
 import io.github.quezka.roundabout.domain.AppEntry
 import io.github.quezka.roundabout.domain.MediaAction
 import io.github.quezka.roundabout.domain.MediaState
-import io.github.quezka.roundabout.domain.PowerState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 typealias IconLoader = (packageName: String, activity: String, sizePx: Int) -> Bitmap?
 
 data class DashUi(
-    val time: String,
     val date: String,
     val greeting: String,
     val speedKmh: Int?,
-    val power: PowerState?,
     val media: MediaState,
     val mediaAccess: Boolean,
     val navigation: AppEntry?,
     val music: AppEntry?,
-    val favorites: List<AppEntry>,
     val player: AppEntry?,
 )
 
 sealed interface DashIntent {
     data object Navigate : DashIntent
-    data object Apps : DashIntent
     data object Light : DashIntent
     data object Settings : DashIntent
     data object GrantMedia : DashIntent
     data object OpenPlayer : DashIntent
-    data class Launch(val app: AppEntry) : DashIntent
     data class Media(val action: MediaAction) : DashIntent
 }
 
-// android auto layout: rail left + cards right
+// android auto layout: cards ; rail = overlay @ RailService
 @Composable
 fun DashScreen(ui: DashUi, icon: IconLoader, onIntent: (DashIntent) -> Unit) {
     val cs = MaterialTheme.colorScheme
     Row(Modifier.fillMaxSize().background(cs.surfaceContainerLowest)) {
-        Rail(ui, icon, onIntent)
         Row(Modifier.weight(1f).fillMaxHeight().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             DriveCard(ui, onIntent, Modifier.weight(0.5f).fillMaxHeight())
             MediaCard(ui, icon, onIntent, Modifier.weight(0.5f).fillMaxHeight())
-        }
-    }
-}
-
-@Composable
-private fun Rail(ui: DashUi, icon: IconLoader, onIntent: (DashIntent) -> Unit) {
-    val cs = MaterialTheme.colorScheme
-    val apps = (listOfNotNull(ui.navigation, ui.music) + ui.favorites).distinctBy { it.packageName }.take(5)
-    Column(
-        Modifier.width(112.dp).fillMaxHeight().background(cs.surfaceContainerLow).padding(vertical = 18.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(ui.time, color = cs.onSurface, fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.testTag("clock"))
-        ui.power?.let { p ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (p.charging) GlyphIcon(Glyph.BOLT, cs.primary, 14.dp)
-                Text("${p.percent}%", color = cs.onSurfaceVariant, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-            }
-        }
-        Spacer(Modifier.height(14.dp))
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            apps.forEach { app ->
-                AppBubble(app, icon, 64.dp, Modifier.clickable(onClickLabel = app.label) { onIntent(DashIntent.Launch(app)) }
-                    .semantics { contentDescription = app.label })
-            }
-        }
-        RailButton(Glyph.GEAR, stringResource(R.string.settings), filled = false) { onIntent(DashIntent.Settings) }
-        Spacer(Modifier.height(12.dp))
-        RailButton(Glyph.GRID, stringResource(R.string.apps), filled = true) { onIntent(DashIntent.Apps) }
-    }
-}
-
-@Composable
-private fun RailButton(glyph: Glyph, label: String, filled: Boolean, onClick: () -> Unit) {
-    val cs = MaterialTheme.colorScheme
-    val m = Modifier.size(68.dp).semantics { contentDescription = label }
-    if (filled) {
-        FilledIconButton(onClick, m, shape = RoundedCornerShape(22.dp)) { GlyphIcon(Glyph.GRID, cs.onPrimary, 28.dp) }
-    } else {
-        FilledTonalIconButton(onClick, m, shape = RoundedCornerShape(22.dp),
-            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = cs.surfaceContainerHigh)) {
-            GlyphIcon(glyph, cs.onSurface, 28.dp)
         }
     }
 }
@@ -152,8 +103,18 @@ private fun DriveCard(ui: DashUi, onIntent: (DashIntent) -> Unit, modifier: Modi
     val cs = MaterialTheme.colorScheme
     Card(modifier, shape = RoundedCornerShape(32.dp), colors = CardDefaults.cardColors(containerColor = cs.surfaceContainer)) {
         Column(Modifier.fillMaxSize().padding(24.dp)) {
-            Text(ui.greeting, color = cs.onSurface, fontSize = 26.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-            Text(ui.date, color = cs.onSurfaceVariant, fontSize = 18.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(ui.greeting, color = cs.onSurface, fontSize = 26.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(ui.date, color = cs.onSurfaceVariant, fontSize = 18.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+                }
+                val settings = stringResource(R.string.settings)
+                FilledTonalIconButton({ onIntent(DashIntent.Settings) }, Modifier.size(60.dp).semantics { contentDescription = settings },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = cs.surfaceContainerHigh)) {
+                    GlyphIcon(Glyph.GEAR, cs.onSurface, 26.dp)
+                }
+            }
             SpeedGauge(
                 ui.speedKmh, stringResource(R.string.speed_unit),
                 Modifier.weight(1f).fillMaxWidth().padding(vertical = 12.dp)

@@ -11,7 +11,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.quezka.roundabout.R
-import io.github.quezka.roundabout.domain.DashClock
 import io.github.quezka.roundabout.domain.Greeting
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -20,15 +19,14 @@ import java.util.Locale
 enum class Screen { DASH, APPS, SETTINGS }
 
 @Composable
-fun DashApp(vm: DashViewModel, version: String, home: Int) {
+fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
     var screen by rememberSaveable { mutableStateOf(Screen.DASH) }
     // home press -> back to dash
-    LaunchedEffect(home) { if (home > 0) screen = Screen.DASH }
+    LaunchedEffect(request) { if (request.first > 0) screen = request.second }
     BackHandler(screen != Screen.DASH) { screen = Screen.DASH }
 
     val now by vm.now.collectAsStateWithLifecycle()
     val speed by vm.speedKmh.collectAsStateWithLifecycle()
-    val power by vm.power.collectAsStateWithLifecycle()
     val ambient by vm.ambient.collectAsStateWithLifecycle()
     val media by vm.media.collectAsStateWithLifecycle()
     val access by vm.mediaAccess.collectAsStateWithLifecycle()
@@ -52,16 +50,13 @@ fun DashApp(vm: DashViewModel, version: String, home: Int) {
             }
             DashScreen(
                 DashUi(
-                    time = DashClock.time(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)),
                     date = dateFormat.format(cal.time).replaceFirstChar { it.titlecase(locale) },
                     greeting = stringResource(greeting),
                     speedKmh = speed,
-                    power = power,
                     media = media,
                     mediaAccess = access,
                     navigation = nav,
                     music = music,
-                    favorites = favorites,
                     player = media.packageName?.let { p -> apps.firstOrNull { it.packageName == p } },
                 ),
                 icon = vm.icon,
@@ -70,8 +65,6 @@ fun DashApp(vm: DashViewModel, version: String, home: Int) {
                     DashIntent.Navigate -> nav?.let(vm::launch) ?: run { screen = Screen.APPS }
                     DashIntent.OpenPlayer -> (media.packageName?.let { p -> apps.firstOrNull { it.packageName == p } } ?: music)
                         ?.let(vm::launch) ?: run { screen = Screen.APPS }
-                    is DashIntent.Launch -> vm.launch(intent.app)
-                    DashIntent.Apps -> screen = Screen.APPS
                     DashIntent.Light -> vm.cycleAmbient()
                     DashIntent.Settings -> screen = Screen.SETTINGS
                     DashIntent.GrantMedia -> vm.openNotificationAccess()

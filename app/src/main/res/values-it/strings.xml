@@ -33,4 +33,6 @@
     <string name="unpin">Togli dalla barra</string>
     <string name="navigate_with">Naviga · %1$s</string>
     <string name="open_app">Apri %1$s</string>
+    <string name="accessibility_description">Permette alla barra di Roundabout di tornare indietro e sapere quale app è aperta.</string>
+    <string name="home">Home</string>
 </resources>

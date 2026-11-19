@@ -34,4 +34,6 @@
     <string name="unpin">Unpin from rail</string>
     <string name="navigate_with">Navigate · %1$s</string>
     <string name="open_app">Open %1$s</string>
+    <string name="accessibility_description">Lets the Roundabout rail go back and see which app is open.</string>
+    <string name="home">Home</string>
 </resources>

@@ -33,4 +33,6 @@
     <string name="unpin">Открепить</string>
     <string name="navigate_with">Навигация · %1$s</string>
     <string name="open_app">Открыть %1$s</string>
+    <string name="accessibility_description">Позволяет панели Roundabout возвращаться назад и видеть открытое приложение.</string>
+    <string name="home">Домой</string>
 </resources>
