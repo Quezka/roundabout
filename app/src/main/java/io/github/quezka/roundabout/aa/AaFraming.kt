@@ -69,16 +69,16 @@ object AaFraming {
         }
     }
 
-    // combine frames of one logical message ; returns complete payload on LAST
+    // combine frames of one logical message, per channel (frames may interleave)
     class Reassembler {
-        private val acc = java.io.ByteArrayOutputStream()
-        private var ch = -1
+        private val acc = HashMap<Int, java.io.ByteArrayOutputStream>()
         fun add(f: Frame): Pair<Int, ByteArray>? {
-            if (f.first) { acc.reset(); ch = f.channel }
-            acc.write(f.payload)
+            val b = acc.getOrPut(f.channel) { java.io.ByteArrayOutputStream() }
+            if (f.first) b.reset()
+            b.write(f.payload)
             if (!f.last) return null
-            val out = ch to acc.toByteArray()
-            acc.reset()
+            val out = f.channel to b.toByteArray()
+            acc.remove(f.channel)
             return out
         }
     }

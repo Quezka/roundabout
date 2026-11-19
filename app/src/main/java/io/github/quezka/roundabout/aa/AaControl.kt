@@ -49,4 +49,6 @@ object AaControl {
     }
 
     fun ping(): ByteArray = byteArrayOf(0x00, MsgId.PING_REQUEST.toByte())
+
+    fun pingResponse(): ByteArray = byteArrayOf(0x00, MsgId.PING_RESPONSE.toByte())
 }
