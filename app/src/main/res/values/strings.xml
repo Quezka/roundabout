@@ -36,4 +36,11 @@
     <string name="open_app">Open %1$s</string>
     <string name="accessibility_description">Lets the Roundabout rail go back and see which app is open.</string>
     <string name="home">Home</string>
+    <string name="dashcam">Dashcam</string>
+    <string name="dashcam_recording">Dashcam recording</string>
+    <string name="dashcam_auto">Record while charging</string>
+    <string name="dashcam_start">Start recording</string>
+    <string name="dashcam_stop">Stop recording</string>
+    <string name="dashcam_info">Road + cabin, 3-minute clips, oldest deleted first. Folder: %1$s</string>
+    <string name="dashcam_lenses">Recording: %1$s</string>
 </resources>

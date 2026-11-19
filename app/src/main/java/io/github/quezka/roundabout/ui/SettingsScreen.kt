@@ -17,11 +17,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -44,6 +47,9 @@ fun SettingsScreen(
     onAmbient: (Ambient) -> Unit,
     onSystemSettings: () -> Unit,
     onNotificationAccess: () -> Unit,
+    dashcam: DashcamUi = DashcamUi(),
+    onAutoRecord: (Boolean) -> Unit = {},
+    onToggleRecording: () -> Unit = {},
 ) {
     val cs = MaterialTheme.colorScheme
     Column(
@@ -67,6 +73,24 @@ fun SettingsScreen(
             }
         }
         Section {
+            Text(stringResource(R.string.dashcam), color = cs.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.dashcam_auto), fontSize = 21.sp, fontWeight = FontWeight.SemiBold) },
+                trailingContent = { Switch(dashcam.auto, onAutoRecord, Modifier.testTag("auto_rec")) },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+            Button(onToggleRecording, Modifier.fillMaxWidth().height(60.dp), shape = RoundedCornerShape(30.dp),
+                colors = if (dashcam.recording) ButtonDefaults.buttonColors(containerColor = cs.error) else ButtonDefaults.buttonColors()) {
+                Text(stringResource(if (dashcam.recording) R.string.dashcam_stop else R.string.dashcam_start), fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            }
+            if (dashcam.lenses.isNotEmpty()) {
+                Text(stringResource(R.string.dashcam_lenses, dashcam.lenses.joinToString(" + ")), color = cs.onSurface, fontSize = 17.sp,
+                    modifier = Modifier.padding(top = 12.dp))
+            }
+            Text(stringResource(R.string.dashcam_info, dashcam.folder), color = cs.onSurfaceVariant, fontSize = 15.sp,
+                modifier = Modifier.padding(top = 12.dp))
+        }
+        Section {
             Line(stringResource(R.string.system_settings), onSystemSettings)
             Line(stringResource(R.string.notification_access), onNotificationAccess)
             Text(stringResource(R.string.roles_hint), color = cs.onSurfaceVariant, fontSize = 17.sp, modifier = Modifier.padding(16.dp))
@@ -74,6 +98,13 @@ fun SettingsScreen(
         Text("Roundabout $version", color = cs.outline, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp, start = 8.dp))
     }
 }
+
+data class DashcamUi(
+    val auto: Boolean = false,
+    val recording: Boolean = false,
+    val lenses: List<String> = emptyList(),
+    val folder: String = "",
+)
 
 @Composable
 private fun Section(content: @Composable () -> Unit) {

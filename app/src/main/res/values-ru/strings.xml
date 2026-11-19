@@ -35,4 +35,11 @@
     <string name="open_app">Открыть %1$s</string>
     <string name="accessibility_description">Позволяет панели Roundabout возвращаться назад и видеть открытое приложение.</string>
     <string name="home">Домой</string>
+    <string name="dashcam">Видеорегистратор</string>
+    <string name="dashcam_recording">Идёт запись</string>
+    <string name="dashcam_auto">Записывать при зарядке</string>
+    <string name="dashcam_start">Начать запись</string>
+    <string name="dashcam_stop">Остановить запись</string>
+    <string name="dashcam_info">Дорога + салон, ролики по 3 минуты, старые удаляются. Папка: %1$s</string>
+    <string name="dashcam_lenses">Запись: %1$s</string>
 </resources>

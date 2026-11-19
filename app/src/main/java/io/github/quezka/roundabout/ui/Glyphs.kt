@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 // own icons drawn @ canvas <- no icon dep
-enum class Glyph { PREVIOUS, PLAY, PAUSE, NEXT, PIN, NOTE, GRID, LIGHT, GEAR, BACK, BOLT, HOME }
+enum class Glyph { PREVIOUS, PLAY, PAUSE, NEXT, PIN, NOTE, GRID, LIGHT, GEAR, BACK, BOLT, HOME, REC }
 
 @Composable
 fun GlyphIcon(glyph: Glyph, color: Color, size: Dp = 28.dp, modifier: Modifier = Modifier) {
@@ -88,6 +88,10 @@ private fun DrawScope.draw(g: Glyph, c: Color) {
         Glyph.BACK -> drawPath(Path().apply {
             moveTo(w * 0.62f, h * 0.16f); lineTo(w * 0.28f, h * 0.5f); lineTo(w * 0.62f, h * 0.84f)
         }, c, style = Stroke(width = s * 1.4f, cap = StrokeCap.Round))
+        Glyph.REC -> {
+            drawCircle(c, radius = w * 0.42f, center = Offset(w / 2, h / 2), style = Stroke(w * 0.09f))
+            drawCircle(c, radius = w * 0.24f, center = Offset(w / 2, h / 2))
+        }
         Glyph.HOME -> drawPath(Path().apply {
             moveTo(w * 0.5f, h * 0.1f); lineTo(w * 0.9f, h * 0.46f); lineTo(w * 0.78f, h * 0.46f)
             lineTo(w * 0.78f, h * 0.88f); lineTo(w * 0.22f, h * 0.88f); lineTo(w * 0.22f, h * 0.46f)

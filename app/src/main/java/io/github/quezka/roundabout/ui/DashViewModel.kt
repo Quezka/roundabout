@@ -79,6 +79,10 @@ class DashViewModel(private val graph: AppGraph) : ViewModel() {
 
     val icon = graph.icon
 
+    val autoRecord: StateFlow<Boolean> = graph.dashcamPrefs.autoRecord().stateIn(viewModelScope, live, false)
+    val clipDir: String = graph.clipDir
+    fun setAutoRecord(on: Boolean) = graph.dashcamPrefs.setAutoRecord(on)
+
     // access may change while user @ settings
     fun onResume() {
         val has = graph.media.hasAccess()

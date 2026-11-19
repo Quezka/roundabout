@@ -76,6 +76,24 @@ class DomainTest {
         assertEquals(emptyList<String>(), f.decode(null))
     }
 
+    @Test fun dashcamLoopDeletesOldestOnly() {
+        val p = io.github.quezka.roundabout.domain.DashcamPolicy
+        val mb = 1024L * 1024
+        val clips = (1..40).map { io.github.quezka.roundabout.domain.Clip("c$it", 60 * mb, it.toLong()) }
+        val del = p.toDelete(clips, free = 10_000 * mb)
+        assertTrue(del.isNotEmpty())
+        assertEquals(del.map { it.name }, clips.take(del.size).map { it.name })
+        assertTrue(clips.sumOf { it.bytes } - del.sumOf { it.bytes } + 56 * mb <= p.MAX_BYTES)
+        assertTrue(p.toDelete(clips.take(3), free = 10_000 * mb).isEmpty())
+        // disk almost full -> delete even under cap
+        assertTrue(p.toDelete(clips.take(3), free = 100 * mb).isNotEmpty())
+    }
+
+    @Test fun clipNameSortsByTime() {
+        val n = io.github.quezka.roundabout.domain.DashcamPolicy.clipName(io.github.quezka.roundabout.domain.Lens.CABIN, 2026, 11, 19, 9, 5, 7)
+        assertEquals("20261119_090507_cabin.mp4", n)
+    }
+
     @Test fun mediaPresence() {
         assertFalse(MediaState.NONE.hasMedia)
         assertFalse(MediaState(" ", null, true, "p").hasMedia)

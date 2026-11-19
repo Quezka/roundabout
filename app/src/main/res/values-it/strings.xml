@@ -35,4 +35,11 @@
     <string name="open_app">Apri %1$s</string>
     <string name="accessibility_description">Permette alla barra di Roundabout di tornare indietro e sapere quale app è aperta.</string>
     <string name="home">Home</string>
+    <string name="dashcam">Dashcam</string>
+    <string name="dashcam_recording">Dashcam in registrazione</string>
+    <string name="dashcam_auto">Registra quando è in carica</string>
+    <string name="dashcam_start">Avvia registrazione</string>
+    <string name="dashcam_stop">Ferma registrazione</string>
+    <string name="dashcam_info">Strada + abitacolo, clip da 3 minuti, le più vecchie vengono cancellate. Cartella: %1$s</string>
+    <string name="dashcam_lenses">In registrazione: %1$s</string>
 </resources>

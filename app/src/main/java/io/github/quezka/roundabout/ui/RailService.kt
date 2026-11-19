@@ -57,6 +57,8 @@ class RailService : Service() {
     private lateinit var battery: TextView
     private lateinit var appColumn: LinearLayout
     private lateinit var appsButton: FrameLayout
+    private lateinit var recButton: FrameLayout
+    private var wasCharging: Boolean? = null
     private var railApps: List<AppEntry> = emptyList()
     private var foreground: String? = null
     private var accent: Int = Ambient.ORANGE.argb.toInt()
@@ -138,7 +140,9 @@ class RailService : Service() {
         panel.addView(battery)
         appColumn = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL }
         panel.addView(appColumn, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f).apply { topMargin = dp(10f) })
-        panel.addView(button(Glyph.BACK, HIGH, TEXT, getString(R.string.back)) { NavAccessibility.back() })
+        recButton = button(Glyph.REC, HIGH, MUTED, getString(R.string.dashcam)) { DashcamService.toggle(this) }
+        panel.addView(recButton)
+        panel.addView(button(Glyph.BACK, HIGH, TEXT, getString(R.string.back)) { NavAccessibility.back() }.withTopMargin(dp(10f)))
         panel.addView(button(Glyph.HOME, HIGH, TEXT, getString(R.string.home)) { openDash(SCREEN_DASH) }.withTopMargin(dp(10f)))
         appsButton = button(Glyph.GRID, accent, Color.BLACK, getString(R.string.apps)) { openDash(SCREEN_APPS) }
         panel.addView(appsButton.withTopMargin(dp(10f)))
@@ -295,6 +299,7 @@ class RailService : Service() {
         val HIGH = Color.rgb(0x25, 0x28, 0x2D)
         val TEXT = Color.rgb(0xF2, 0xF3, 0xF5)
         val MUTED = Color.rgb(0xAD, 0xB2, 0xBB)
+        val REC_RED = Color.rgb(0xFF, 0x4A, 0x3D)
 
         fun railWidthPx(context: Context): Int =
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, RAIL_DP, context.resources.displayMetrics).toInt()

@@ -56,6 +56,10 @@ class GlyphDrawable(private val glyph: Glyph, color: Int) : Drawable() {
                 moveTo(w * 0.58f, h * 0.04f); lineTo(w * 0.2f, h * 0.56f); lineTo(w * 0.48f, h * 0.56f)
                 lineTo(w * 0.4f, h * 0.96f); lineTo(w * 0.8f, h * 0.42f); lineTo(w * 0.52f, h * 0.42f); close()
             }, paint)
+            Glyph.REC -> {
+                canvas.drawCircle(w / 2, h / 2, w * 0.42f, stroke.apply { strokeWidth = w * 0.09f })
+                canvas.drawCircle(w / 2, h / 2, w * 0.24f, paint)
+            }
             else -> canvas.drawCircle(w / 2, h / 2, w * 0.3f, paint)
         }
         canvas.restore()

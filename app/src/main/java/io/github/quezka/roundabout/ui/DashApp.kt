@@ -34,6 +34,10 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
     val nav by vm.navigation.collectAsStateWithLifecycle()
     val music by vm.music.collectAsStateWithLifecycle()
     val favorites by vm.favorites.collectAsStateWithLifecycle()
+    val autoRec by vm.autoRecord.collectAsStateWithLifecycle()
+    val recording by DashcamService.recording.collectAsStateWithLifecycle()
+    val lenses by DashcamService.lenses.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     when (screen) {
         Screen.DASH -> {
@@ -89,6 +93,9 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
             onAmbient = vm::setAmbient,
             onSystemSettings = vm::openSystemSettings,
             onNotificationAccess = vm::openNotificationAccess,
+            dashcam = DashcamUi(auto = autoRec, recording = recording, lenses = lenses.map { it.tag }, folder = vm.clipDir),
+            onAutoRecord = vm::setAutoRecord,
+            onToggleRecording = { DashcamService.toggle(context) },
         )
     }
 }

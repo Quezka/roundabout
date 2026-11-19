@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import io.github.quezka.roundabout.data.AppIcons
 import io.github.quezka.roundabout.data.BatteryPowerSource
+import io.github.quezka.roundabout.data.CameraRecorder
+import io.github.quezka.roundabout.data.FileClipStore
 import io.github.quezka.roundabout.data.GpsSpeedSource
 import io.github.quezka.roundabout.data.IntentAppLauncher
 import io.github.quezka.roundabout.data.PackageAppSource
@@ -12,7 +14,11 @@ import io.github.quezka.roundabout.data.SessionMediaSource
 import io.github.quezka.roundabout.data.SharedDashPrefs
 import io.github.quezka.roundabout.domain.AppLauncher
 import io.github.quezka.roundabout.domain.AppSource
+import io.github.quezka.roundabout.domain.ClipStore
 import io.github.quezka.roundabout.domain.DashPrefs
+import io.github.quezka.roundabout.domain.DashRecorder
+import io.github.quezka.roundabout.domain.DashcamPrefs
+import io.github.quezka.roundabout.domain.Lens
 import io.github.quezka.roundabout.domain.MediaSource
 import io.github.quezka.roundabout.domain.PowerSource
 import io.github.quezka.roundabout.domain.SpeedSource
@@ -26,7 +32,14 @@ class AppGraph(context: Context) {
     val launcher: AppLauncher = IntentAppLauncher(app)
     val speed: SpeedSource = GpsSpeedSource(app)
     val power: PowerSource = BatteryPowerSource(app)
-    val prefs: DashPrefs = SharedDashPrefs(app)
+    private val shared = SharedDashPrefs(app)
+    val prefs: DashPrefs = shared
+    val dashcamPrefs: DashcamPrefs = shared
+    private val clipFiles = FileClipStore(app)
+    val clips: ClipStore = clipFiles
+    val clipDir: String = clipFiles.dir.path
+    // new recorder per session ; camera1 = single owner
+    fun recorder(lens: Lens): DashRecorder = CameraRecorder(clipFiles.dir, lens)
     val media: MediaSource = SessionMediaSource(app, ComponentName(app, MediaListener::class.java))
     private val iconCache = AppIcons(app)
     val icon: (packageName: String, activity: String, sizePx: Int) -> Bitmap? = iconCache::icon
