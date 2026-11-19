@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="greeting_morning">Доброе утро</string>
+    <string name="greeting_afternoon">Добрый день</string>
+    <string name="greeting_evening">Добрый вечер</string>
+    <string name="greeting_night">Осторожно на дороге</string>
+    <string name="speed_unit">км/ч</string>
+    <string name="now_playing">Сейчас играет</string>
+    <string name="nothing_playing">Ничего не играет</string>
+    <string name="unknown_artist">Неизвестный исполнитель</string>
+    <string name="media_access_needed">Разрешите доступ к уведомлениям, чтобы видеть, что играет.</string>
+    <string name="grant_access">Разрешить</string>
+    <string name="navigate">Навигация</string>
+    <string name="music">Музыка</string>
+    <string name="apps">Приложения</string>
+    <string name="light">Свет</string>
+    <string name="settings">Настройки</string>
+    <string name="no_app_chosen">Удерживайте приложение в списке, чтобы выбрать</string>
+    <string name="back">Назад</string>
+    <string name="use_for_navigation">Для навигации</string>
+    <string name="use_for_music">Для музыки</string>
+    <string name="app_info">О приложении</string>
+    <string name="cancel">Отмена</string>
+    <string name="ambient_light">Подсветка</string>
+    <string name="system_settings">Настройки Android</string>
+    <string name="notification_access">Доступ к уведомлениям</string>
+    <string name="roles_hint">Чтобы сменить навигацию или музыку, удерживайте значок в списке приложений.</string>
+    <string name="media_prev">Назад</string>
+    <string name="media_play">Играть</string>
+    <string name="media_pause">Пауза</string>
+    <string name="media_next">Дальше</string>
+    <string name="pin">Закрепить на панели</string>
+    <string name="unpin">Открепить</string>
+    <string name="navigate_with">Навигация · %1$s</string>
+    <string name="open_app">Открыть %1$s</string>
+</resources>

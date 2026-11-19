@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Roundabout" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/dash_bg</item>
+        <item name="android:colorBackground">@color/dash_bg</item>
+        <item name="android:statusBarColor">@color/dash_bg</item>
+        <item name="android:navigationBarColor">@color/dash_bg</item>
+        <item name="android:windowShowWallpaper">false</item>
+    </style>
+    <color name="dash_bg">#FF0E0F11</color>
+</resources>

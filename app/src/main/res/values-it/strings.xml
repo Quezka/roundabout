@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="greeting_morning">Buongiorno</string>
+    <string name="greeting_afternoon">Buon pomeriggio</string>
+    <string name="greeting_evening">Buonasera</string>
+    <string name="greeting_night">Guida con prudenza</string>
+    <string name="speed_unit">km/h</string>
+    <string name="now_playing">In riproduzione</string>
+    <string name="nothing_playing">Niente in riproduzione</string>
+    <string name="unknown_artist">Artista sconosciuto</string>
+    <string name="media_access_needed">Consenti l\'accesso alle notifiche per vedere cosa suona.</string>
+    <string name="grant_access">Consenti</string>
+    <string name="navigate">Naviga</string>
+    <string name="music">Musica</string>
+    <string name="apps">App</string>
+    <string name="light">Luce</string>
+    <string name="settings">Impostazioni</string>
+    <string name="no_app_chosen">Tieni premuta un\'app in App per sceglierla</string>
+    <string name="back">Indietro</string>
+    <string name="use_for_navigation">Usa per la navigazione</string>
+    <string name="use_for_music">Usa per la musica</string>
+    <string name="app_info">Info app</string>
+    <string name="cancel">Annulla</string>
+    <string name="ambient_light">Luce ambiente</string>
+    <string name="system_settings">Impostazioni Android</string>
+    <string name="notification_access">Accesso alle notifiche</string>
+    <string name="roles_hint">Per cambiare l\'app di navigazione o musica, tieni premuta la sua icona in App.</string>
+    <string name="media_prev">Precedente</string>
+    <string name="media_play">Riproduci</string>
+    <string name="media_pause">Pausa</string>
+    <string name="media_next">Successivo</string>
+    <string name="pin">Fissa nella barra</string>
+    <string name="unpin">Togli dalla barra</string>
+    <string name="navigate_with">Naviga · %1$s</string>
+    <string name="open_app">Apri %1$s</string>
+</resources>
