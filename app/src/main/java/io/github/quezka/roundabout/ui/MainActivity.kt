@@ -2,6 +2,7 @@ package io.github.quezka.roundabout.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,9 +32,10 @@ class MainActivity : ComponentActivity() {
         // car dash -> screen stays on while dash shown
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window, window.decorView).apply {
-            hide(WindowInsetsCompat.Type.systemBars())
-            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        hideBars()
+        // never show system bars ; re-hide the instant they peek (edge swipe / wake)
+        window.decorView.setOnSystemUiVisibilityChangeListener { v ->
+            if (v and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) hideBars()
         }
         val version = packageManager.getPackageInfo(packageName, 0).versionName ?: ""
         setContent {
@@ -67,7 +69,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun hideBars() {
-        WindowInsetsControllerCompat(window, window.decorView).hide(WindowInsetsCompat.Type.systemBars())
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
     }
 
     @Deprecated("launcher swallows back")

@@ -20,10 +20,23 @@ interface AppLauncher {
 }
 
 object AppCatalog {
+    // system/util apps hidden from the launcher grid ; still usable as nav/music roles
+    val hidden = setOf(
+        "com.topjohnwu.magisk",
+        "com.android.contacts",
+        "com.android.camera2",
+        "com.android.providers.downloads.ui",
+        "com.mapswithme.maps.pro",
+        "com.android.settings",
+    )
+
     fun sorted(apps: List<AppEntry>, self: String): List<AppEntry> =
         apps.filter { it.packageName != self }
             .distinctBy { it.packageName to it.activity }
             .sortedBy { it.label.lowercase() }
+
+    fun launchable(apps: List<AppEntry>, self: String): List<AppEntry> =
+        sorted(apps, self).filter { it.packageName !in hidden }
 }
 
 object RoleDefaults {

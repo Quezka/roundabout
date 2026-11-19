@@ -86,6 +86,7 @@ class DashViewModel(private val graph: AppGraph) : ViewModel() {
 
     val autoRecord: StateFlow<Boolean> = graph.dashcamPrefs.autoRecord().stateIn(viewModelScope, live, false)
     val clipDir: String = graph.clipDir
+    val selfPackage: String = graph.selfPackage
     fun setAutoRecord(on: Boolean) = graph.dashcamPrefs.setAutoRecord(on)
 
     private val clipRefresh = MutableStateFlow(0)

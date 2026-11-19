@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.quezka.roundabout.R
+import io.github.quezka.roundabout.domain.AppCatalog
 import io.github.quezka.roundabout.domain.Greeting
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -78,7 +79,7 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
             }
         }
         Screen.APPS -> AppsScreen(
-            apps = apps,
+            apps = AppCatalog.launchable(apps, vm.selfPackage),
             favorites = favorites,
             icon = vm.icon,
             onBack = { screen = Screen.DASH },
