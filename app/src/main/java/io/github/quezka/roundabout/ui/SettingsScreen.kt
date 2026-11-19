@@ -57,6 +57,9 @@ fun SettingsScreen(
     onOpenClips: () -> Unit = {},
     themeMode: ThemeMode = ThemeMode.AUTO,
     onThemeMode: (ThemeMode) -> Unit = {},
+    btEnabled: Boolean = false,
+    onBluetooth: (Boolean) -> Unit = {},
+    onAndroidAuto: () -> Unit = {},
 ) {
     val cs = MaterialTheme.colorScheme
     Column(
@@ -120,6 +123,20 @@ fun SettingsScreen(
                     modifier = Modifier.padding(top = 12.dp))
             }
             Text(stringResource(R.string.dashcam_info, dashcam.folder), color = cs.onSurfaceVariant, fontSize = 15.sp,
+                modifier = Modifier.padding(top = 12.dp))
+        }
+        Section {
+            Text("Phone link", color = cs.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            ListItem(
+                headlineContent = { Text("Bluetooth", fontSize = 21.sp, fontWeight = FontWeight.SemiBold) },
+                trailingContent = { Switch(btEnabled, onBluetooth, Modifier.testTag("bt")) },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+            Spacer(Modifier.height(10.dp))
+            Button(onAndroidAuto, Modifier.fillMaxWidth().height(60.dp).testTag("android_auto"), shape = RoundedCornerShape(30.dp)) {
+                Text("Open Android Auto", fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            }
+            Text("Needs Headunit Reloaded (gb.xxy.hr) + WiFi hotspot.", color = cs.onSurfaceVariant, fontSize = 15.sp,
                 modifier = Modifier.padding(top = 12.dp))
         }
         Section {

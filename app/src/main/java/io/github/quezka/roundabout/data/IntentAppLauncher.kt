@@ -18,6 +18,9 @@ class IntentAppLauncher(private val context: Context) : AppLauncher {
         start(i) || start(context.packageManager.getLaunchIntentForPackage(app.packageName))
     }
 
+    override fun launchPackage(pkg: String): Boolean =
+        start(context.packageManager.getLaunchIntentForPackage(pkg))
+
     override fun openSystemSettings() {
         start(Intent(Settings.ACTION_SETTINGS))
     }

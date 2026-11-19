@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import io.github.quezka.roundabout.data.AppIcons
 import io.github.quezka.roundabout.data.BatteryPowerSource
+import io.github.quezka.roundabout.data.BluetoothLink
 import io.github.quezka.roundabout.data.CameraRecorder
 import io.github.quezka.roundabout.data.ClipThumbs
 import io.github.quezka.roundabout.data.FileClipStore
@@ -31,6 +32,7 @@ class AppGraph(context: Context) {
     val selfPackage: String = app.packageName
     val apps: AppSource = PackageAppSource(app)
     val launcher: AppLauncher = IntentAppLauncher(app)
+    val bt: BluetoothLink = BluetoothLink(app)
     val speed: SpeedSource = GpsSpeedSource(app)
     val power: PowerSource = BatteryPowerSource(app)
     private val shared = SharedDashPrefs(app)

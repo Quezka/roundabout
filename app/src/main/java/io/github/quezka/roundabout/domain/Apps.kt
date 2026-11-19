@@ -14,6 +14,7 @@ interface AppSource {
 
 interface AppLauncher {
     fun launch(app: AppEntry)
+    fun launchPackage(pkg: String): Boolean
     fun openSystemSettings()
     fun openNotificationAccess()
     fun openAppInfo(packageName: String)
