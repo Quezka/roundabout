@@ -40,6 +40,6 @@
     <string name="dashcam_auto">Записывать при зарядке</string>
     <string name="dashcam_start">Начать запись</string>
     <string name="dashcam_stop">Остановить запись</string>
-    <string name="dashcam_info">Дорога + салон, ролики по 3 минуты, старые удаляются. Папка: %1$s</string>
+    <string name="dashcam_info">3 минуты дорога, затем 1 минута салон, по очереди, старые удаляются. Папка: %1$s</string>
     <string name="dashcam_lenses">Запись: %1$s</string>
 </resources>

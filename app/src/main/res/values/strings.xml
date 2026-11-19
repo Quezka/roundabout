@@ -41,6 +41,6 @@
     <string name="dashcam_auto">Record while charging</string>
     <string name="dashcam_start">Start recording</string>
     <string name="dashcam_stop">Stop recording</string>
-    <string name="dashcam_info">Road + cabin, 3-minute clips, oldest deleted first. Folder: %1$s</string>
+    <string name="dashcam_info">Road 3 min, then cabin 1 min, in turn, oldest deleted first. Folder: %1$s</string>
     <string name="dashcam_lenses">Recording: %1$s</string>
 </resources>

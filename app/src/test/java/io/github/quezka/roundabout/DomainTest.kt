@@ -89,6 +89,15 @@ class DomainTest {
         assertTrue(p.toDelete(clips.take(3), free = 100 * mb).isNotEmpty())
     }
 
+    @Test fun dashcamAlternatesLenses() {
+        val p = io.github.quezka.roundabout.domain.DashcamPolicy
+        assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(null, true))
+        assertEquals(io.github.quezka.roundabout.domain.Lens.CABIN, p.nextLens(io.github.quezka.roundabout.domain.Lens.ROAD, true))
+        assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(io.github.quezka.roundabout.domain.Lens.CABIN, true))
+        assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(io.github.quezka.roundabout.domain.Lens.ROAD, false))
+        assertTrue(p.durationMs(io.github.quezka.roundabout.domain.Lens.ROAD) > p.durationMs(io.github.quezka.roundabout.domain.Lens.CABIN))
+    }
+
     @Test fun clipNameSortsByTime() {
         val n = io.github.quezka.roundabout.domain.DashcamPolicy.clipName(io.github.quezka.roundabout.domain.Lens.CABIN, 2026, 11, 19, 9, 5, 7)
         assertEquals("20261119_090507_cabin.mp4", n)

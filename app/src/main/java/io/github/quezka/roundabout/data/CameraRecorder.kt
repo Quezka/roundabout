@@ -44,7 +44,7 @@ class CameraRecorder(private val dir: File, private val lens: Lens) : DashRecord
     private var cameraId = 0
 
     // one segment ; onEnd fires @ max duration
-    override fun start(name: String, onEnd: () -> Unit): Boolean {
+    override fun start(name: String, durationMs: Int, onEnd: () -> Unit): Boolean {
         val c = camera ?: return false
         val out = File(dir, name)
         return try {
@@ -63,7 +63,7 @@ class CameraRecorder(private val dir: File, private val lens: Lens) : DashRecord
                 setVideoEncodingBitRate(minOf(profile.videoBitRate, DashcamPolicy.BITRATE))
                 // landscape mount @ rotation 90 ; back sensor 90 -> 0 ; front sensor 270 -> 180
                 setOrientationHint(if (lens == Lens.ROAD) 0 else 180)
-                setMaxDuration(DashcamPolicy.SEGMENT_MS)
+                setMaxDuration(durationMs)
                 setOutputFile(out.path)
                 setOnInfoListener { _, what, _ ->
                     if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) onEnd()

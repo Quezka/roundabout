@@ -15,6 +15,13 @@ interface ClipStore {
 
 object DashcamPolicy {
     const val SEGMENT_MS = 3 * 60 * 1000
+    const val CABIN_MS = 60 * 1000
+
+    // hal = 1 cam at a time -> alternate ; road longer
+    fun durationMs(lens: Lens): Int = if (lens == Lens.ROAD) SEGMENT_MS else CABIN_MS
+
+    fun nextLens(current: Lens?, cabinAvailable: Boolean): Lens =
+        if (current == Lens.ROAD && cabinAvailable) Lens.CABIN else Lens.ROAD
     const val BITRATE = 2_500_000
     // loop cap ; ~80 min @ 2.5 Mbit
     const val MAX_BYTES = 1_500L * 1024 * 1024
@@ -48,7 +55,7 @@ interface DashcamPrefs {
 // camera owner ; one per recording session
 interface DashRecorder {
     fun open(): Boolean
-    fun start(name: String, onEnd: () -> Unit): Boolean
+    fun start(name: String, durationMs: Int, onEnd: () -> Unit): Boolean
     fun stopSegment()
     fun close()
 }

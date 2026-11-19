@@ -25,6 +25,8 @@ class DashcamService : Service() {
     private lateinit var thread: HandlerThread
     private lateinit var handler: Handler
     private val recorders = mutableMapOf<Lens, DashRecorder>()
+    private var current: Lens? = null
+    private var cabinWorks = true
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -35,19 +37,8 @@ class DashcamService : Service() {
         handler = Handler(thread.looper)
         startForeground(NOTIFICATION_ID, notification())
         handler.post {
-            // each lens own loop ; cabin optional <- hw may refuse 2 cams
-            Lens.entries.forEach { lens ->
-                val r = AppGraph.get(this).recorder(lens)
-                if (r.open()) recorders[lens] = r
-            }
-            lenses.value = recorders.keys.toSet()
-            if (recorders.isEmpty()) {
-                state.value = false
-                stopSelf()
-                return@post
-            }
             state.value = true
-            recorders.keys.toList().forEach { next(it) }
+            next()
         }
     }
 
@@ -56,20 +47,31 @@ class DashcamService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun next(lens: Lens) {
-        val r = recorders[lens] ?: return
-        r.stopSegment()
+    // one cam open at a time ; road -> cabin -> road ...
+    private fun next() {
+        current?.let { recorders[it]?.close() }
+        recorders.clear()
         prune()
+        var lens = DashcamPolicy.nextLens(current, cabinWorks)
+        var r = AppGraph.get(this).recorder(lens)
+        if (!r.open()) {
+            if (lens == Lens.CABIN) cabinWorks = false
+            lens = Lens.ROAD
+            r = AppGraph.get(this).recorder(lens)
+            if (!r.open()) { stopSelf(); return }
+        }
         val c = Calendar.getInstance()
         val name = DashcamPolicy.clipName(lens,
             c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH),
             c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND),
         )
-        if (!r.start(name) { handler.post { next(lens) } }) {
+        current = lens
+        recorders[lens] = r
+        lenses.value = setOf(lens)
+        if (!r.start(name, DashcamPolicy.durationMs(lens)) { handler.post { next() } }) {
             r.close()
-            recorders.remove(lens)
-            lenses.value = recorders.keys.toSet()
-            if (recorders.isEmpty()) stopSelf()
+            recorders.clear()
+            if (lens == Lens.CABIN) { cabinWorks = false; handler.post { next() } } else stopSelf()
         }
     }
 
