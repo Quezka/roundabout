@@ -4,10 +4,12 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -29,7 +31,40 @@ val Manrope = FontFamily(
     Font(R.font.manrope_bold, FontWeight.Bold),
 )
 
-fun dashScheme(accent: Color): ColorScheme {
+// white led on white card = invisible -> graphite in light
+fun accentFor(accent: Color, dark: Boolean): Color =
+    if (!dark && accent.red > 0.85f && accent.green > 0.85f && accent.blue > 0.85f) Color(0xFF2A2D33) else accent
+
+fun dashScheme(accent: Color, dark: Boolean = true): ColorScheme {
+    if (!dark) {
+        val a = accentFor(accent, false)
+        val white = Color(0xFFFFFFFF)
+        val ink = Color(0xFF15171A)
+        return lightColorScheme(
+            primary = a,
+            onPrimary = if (a.luminance() > 0.45f) ink else white,
+            primaryContainer = lerp(white, a, 0.22f),
+            onPrimaryContainer = ink,
+            secondary = lerp(Color(0xFF4A4F57), a, 0.25f),
+            onSecondary = white,
+            secondaryContainer = lerp(white, a, 0.08f),
+            onSecondaryContainer = ink,
+            background = Color(0xFFE8EBEF),
+            onBackground = ink,
+            surface = Color(0xFFE8EBEF),
+            onSurface = ink,
+            surfaceVariant = Color(0xFFDDE1E6),
+            onSurfaceVariant = Color(0xFF555B66),
+            surfaceContainerLowest = Color(0xFFE8EBEF),
+            surfaceContainerLow = Color(0xFFF6F7F9),
+            surfaceContainer = white,
+            surfaceContainerHigh = Color(0xFFEEF0F3),
+            surfaceContainerHighest = Color(0xFFE1E4E9),
+            outline = Color(0xFF8A9099),
+            outlineVariant = Color(0xFFCFD3D9),
+            error = Color(0xFFC62E24),
+        )
+    }
     val high = Color(0xFF25282D)
     return darkColorScheme(
         primary = accent,
@@ -58,7 +93,7 @@ fun dashScheme(accent: Color): ColorScheme {
 }
 
 @Composable
-fun RoundaboutTheme(accent: Color = Color(0xFFFF7A1A), content: @Composable () -> Unit) {
+fun RoundaboutTheme(accent: Color = Color(0xFFFF7A1A), dark: Boolean = true, content: @Composable () -> Unit) {
     val typography = remember {
         val base = Typography()
         fun TextStyle.m() = copy(fontFamily = Manrope)
@@ -70,5 +105,5 @@ fun RoundaboutTheme(accent: Color = Color(0xFFFF7A1A), content: @Composable () -
             labelLarge = base.labelLarge.m(), labelMedium = base.labelMedium.m(), labelSmall = base.labelSmall.m(),
         )
     }
-    MaterialTheme(colorScheme = dashScheme(accent), typography = typography, content = content)
+    MaterialTheme(colorScheme = dashScheme(accent, dark), typography = typography, content = content)
 }

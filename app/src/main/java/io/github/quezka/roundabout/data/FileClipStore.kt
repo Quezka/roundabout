@@ -10,16 +10,23 @@ import java.io.File
 class FileClipStore(context: Context) : ClipStore {
     // app dir -> no storage permission need ; visible via usb @ Android/data
     val dir: File = File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) ?: context.filesDir, "dashcam").apply { mkdirs() }
+    private val savedDir = File(dir, "saved").apply { mkdirs() }
 
-    override fun clips(): List<Clip> =
-        dir.listFiles { f -> f.isFile && f.name.endsWith(".mp4") }.orEmpty()
-            .map { Clip(it.name, it.length(), it.lastModified()) }
+    private fun list(d: File, saved: Boolean) =
+        d.listFiles { f -> f.isFile && f.name.endsWith(".mp4") }.orEmpty()
+            .map { Clip(it.name, it.length(), it.lastModified(), saved) }
+
+    override fun clips(): List<Clip> = list(dir, false)
+    override fun saved(): List<Clip> = list(savedDir, true)
+
+    override fun protect(clip: Clip): Boolean =
+        clip.saved || File(dir, clip.name).renameTo(File(savedDir, clip.name))
 
     override fun delete(clip: Clip) {
-        File(dir, clip.name).delete()
+        File(if (clip.saved) savedDir else dir, clip.name).delete()
     }
 
     override fun freeBytes(): Long = StatFs(dir.path).let { it.availableBlocksLong * it.blockSizeLong }
 
-    fun file(name: String) = File(dir, name)
+    override fun path(clip: Clip): String = File(if (clip.saved) savedDir else dir, clip.name).path
 }

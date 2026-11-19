@@ -38,7 +38,10 @@ class MainActivity : ComponentActivity() {
         val version = packageManager.getPackageInfo(packageName, 0).versionName ?: ""
         setContent {
             val ambient by vm.ambient.collectAsStateWithLifecycle()
-            RoundaboutTheme(Color(ambient.argb)) { DashApp(vm, version, request.value) }
+            val mode by vm.themeMode.collectAsStateWithLifecycle()
+            val now by vm.now.collectAsStateWithLifecycle()
+            val hour = java.util.Calendar.getInstance().apply { timeInMillis = now }.get(java.util.Calendar.HOUR_OF_DAY)
+            RoundaboutTheme(Color(ambient.argb), mode.isDark(hour)) { DashApp(vm, version, request.value) }
         }
     }
 
@@ -46,6 +49,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         val target = when (intent.getStringExtra(RailService.EXTRA_SCREEN)) {
             RailService.SCREEN_APPS -> Screen.APPS
+            RailService.SCREEN_CLIPS -> Screen.CLIPS
             else -> Screen.DASH
         }
         request.value = (request.value.first + 1) to target

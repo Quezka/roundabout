@@ -43,4 +43,20 @@
     <string name="dashcam_stop">Stop recording</string>
     <string name="dashcam_info">Road 3 min, then cabin 1 min, in turn, oldest deleted first. Folder: %1$s</string>
     <string name="dashcam_lenses">Recording: %1$s</string>
+    <string name="lens_road">road</string>
+    <string name="lens_cabin">cabin</string>
+    <string name="clips_title">Recordings</string>
+    <string name="filter_all">All</string>
+    <string name="filter_saved">Saved</string>
+    <string name="lens_road_title">Road</string>
+    <string name="lens_cabin_title">Cabin</string>
+    <string name="save_clip">Save</string>
+    <string name="delete_clip">Delete</string>
+    <string name="delete_confirm">Delete this clip? It cannot be undone.</string>
+    <string name="no_clips">No recordings yet</string>
+    <string name="open_clips">Watch recordings</string>
+    <string name="theme">Theme</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 </resources>

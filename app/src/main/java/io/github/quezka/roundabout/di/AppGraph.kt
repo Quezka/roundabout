@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import io.github.quezka.roundabout.data.AppIcons
 import io.github.quezka.roundabout.data.BatteryPowerSource
 import io.github.quezka.roundabout.data.CameraRecorder
+import io.github.quezka.roundabout.data.ClipThumbs
 import io.github.quezka.roundabout.data.FileClipStore
 import io.github.quezka.roundabout.data.GpsSpeedSource
 import io.github.quezka.roundabout.data.IntentAppLauncher
@@ -40,6 +41,8 @@ class AppGraph(context: Context) {
     val clipDir: String = clipFiles.dir.path
     // new recorder per session ; camera1 = single owner
     fun recorder(lens: Lens): DashRecorder = CameraRecorder(clipFiles.dir, lens)
+    private val thumbs = ClipThumbs(app)
+    val clipThumb: (path: String, widthPx: Int) -> Bitmap? = thumbs::thumb
     val media: MediaSource = SessionMediaSource(app, ComponentName(app, MediaListener::class.java))
     private val iconCache = AppIcons(app)
     val icon: (packageName: String, activity: String, sizePx: Int) -> Bitmap? = iconCache::icon

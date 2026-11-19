@@ -24,6 +24,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.quezka.roundabout.R
 import io.github.quezka.roundabout.domain.Ambient
+import io.github.quezka.roundabout.domain.ThemeMode
 
 @Composable
 fun SettingsScreen(
@@ -50,6 +54,9 @@ fun SettingsScreen(
     dashcam: DashcamUi = DashcamUi(),
     onAutoRecord: (Boolean) -> Unit = {},
     onToggleRecording: () -> Unit = {},
+    onOpenClips: () -> Unit = {},
+    themeMode: ThemeMode = ThemeMode.AUTO,
+    onThemeMode: (ThemeMode) -> Unit = {},
 ) {
     val cs = MaterialTheme.colorScheme
     Column(
@@ -57,6 +64,26 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         ScreenHeader(stringResource(R.string.settings), onBack)
+        Section {
+            Text(stringResource(R.string.theme), color = cs.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(14.dp))
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                ThemeMode.entries.forEachIndexed { i, m ->
+                    SegmentedButton(
+                        selected = m == themeMode,
+                        onClick = { onThemeMode(m) },
+                        shape = SegmentedButtonDefaults.itemShape(i, ThemeMode.entries.size),
+                        modifier = Modifier.height(56.dp).testTag("theme_" + m.name.lowercase()),
+                    ) {
+                        Text(stringResource(when (m) {
+                            ThemeMode.AUTO -> R.string.theme_auto
+                            ThemeMode.LIGHT -> R.string.theme_light
+                            ThemeMode.DARK -> R.string.theme_dark
+                        }), fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        }
         Section {
             Text(stringResource(R.string.ambient_light), color = cs.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(16.dp))
@@ -82,6 +109,11 @@ fun SettingsScreen(
             Button(onToggleRecording, Modifier.fillMaxWidth().height(60.dp), shape = RoundedCornerShape(30.dp),
                 colors = if (dashcam.recording) ButtonDefaults.buttonColors(containerColor = cs.error) else ButtonDefaults.buttonColors()) {
                 Text(stringResource(if (dashcam.recording) R.string.dashcam_stop else R.string.dashcam_start), fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(10.dp))
+            androidx.compose.material3.FilledTonalButton(onOpenClips, Modifier.fillMaxWidth().height(60.dp).testTag("open_clips"),
+                shape = RoundedCornerShape(30.dp)) {
+                Text(stringResource(R.string.open_clips), fontSize = 19.sp, fontWeight = FontWeight.Bold)
             }
             if (dashcam.lenses.isNotEmpty()) {
                 Text(stringResource(R.string.dashcam_lenses, dashcam.lenses.joinToString(" + ")), color = cs.onSurface, fontSize = 17.sp,

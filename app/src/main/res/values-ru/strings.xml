@@ -42,4 +42,20 @@
     <string name="dashcam_stop">Остановить запись</string>
     <string name="dashcam_info">3 минуты дорога, затем 1 минута салон, по очереди, старые удаляются. Папка: %1$s</string>
     <string name="dashcam_lenses">Запись: %1$s</string>
+    <string name="lens_road">дорога</string>
+    <string name="lens_cabin">салон</string>
+    <string name="clips_title">Записи</string>
+    <string name="filter_all">Все</string>
+    <string name="filter_saved">Сохранённые</string>
+    <string name="lens_road_title">Дорога</string>
+    <string name="lens_cabin_title">Салон</string>
+    <string name="save_clip">Сохранить</string>
+    <string name="delete_clip">Удалить</string>
+    <string name="delete_confirm">Удалить эту запись? Отменить нельзя.</string>
+    <string name="no_clips">Записей пока нет</string>
+    <string name="open_clips">Смотреть записи</string>
+    <string name="theme">Тема</string>
+    <string name="theme_auto">Авто</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
 </resources>

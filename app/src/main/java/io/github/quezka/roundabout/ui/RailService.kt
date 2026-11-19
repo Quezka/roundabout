@@ -59,13 +59,41 @@ class RailService : Service() {
     private lateinit var appsButton: FrameLayout
     private lateinit var recButton: FrameLayout
     private var wasCharging: Boolean? = null
+    private var pal: RailPalette = DARK
+    private var themeMode = io.github.quezka.roundabout.domain.ThemeMode.AUTO
+    private var lastBattery = ""
+    private lateinit var recLabel: TextView
+    private var recStarted = 0L
+    private var blink = false
+    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+    // 1 redraw/s ; no animator <- animator = redraw every frame
+    private val recTick = object : Runnable {
+        override fun run() {
+            if (recStarted == 0L) return
+            blink = !blink
+            val sec = (System.currentTimeMillis() - recStarted) / 1000
+            val lens = DashcamService.lenses.value.firstOrNull()
+            val tag = when (lens) {
+                io.github.quezka.roundabout.domain.Lens.CABIN -> getString(R.string.lens_cabin)
+                io.github.quezka.roundabout.domain.Lens.ROAD -> getString(R.string.lens_road)
+                null -> ""
+            }
+            recLabel.text = (if (blink) "● " else "○ ") + "%d:%02d".format(sec / 60, sec % 60) + "\n" + tag
+            (recButton.background as GradientDrawable).setColor(if (blink) REC_RED else REC_DIM)
+            (recButton.getChildAt(0) as ImageView).drawable.let { (it as GlyphDrawable).setColor(Color.WHITE) }
+            main.postDelayed(this, 1000)
+        }
+    }
     private var railApps: List<AppEntry> = emptyList()
     private var foreground: String? = null
     private var accent: Int = Ambient.ORANGE.argb.toInt()
     private var font: Typeface? = null
 
     private val tick = object : BroadcastReceiver() {
-        override fun onReceive(c: Context, i: Intent) = updateClock()
+        override fun onReceive(c: Context, i: Intent) {
+            updateClock()
+            applyTheme()
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -94,6 +122,7 @@ class RailService : Service() {
 
     override fun onDestroy() {
         scope.cancel()
+        main.removeCallbacks(recTick)
         try { unregisterReceiver(tick) } catch (e: Exception) { }
         windows.forEach { try { wm.removeView(it) } catch (e: Exception) { } }
         windows.clear()
@@ -124,26 +153,30 @@ class RailService : Service() {
     private fun addRail() {
         val s = screen()
         val width = railWidthPx(this)
-        val root = FrameLayout(this).apply { setBackgroundColor(BG) }
+        val root = FrameLayout(this).apply { setBackgroundColor(pal.bg) }
         val panel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            background = GradientDrawable().apply { setColor(PANEL); cornerRadius = dp(24f).toFloat() }
+            background = GradientDrawable().apply { setColor(pal.panel); cornerRadius = dp(24f).toFloat() }
             setPadding(0, dp(14f), 0, dp(12f))
         }
         root.addView(panel, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT).apply {
             setMargins(dp(8f), dp(8f), dp(8f), dp(8f))
         })
-        clock = text(26f, TEXT)
-        battery = text(14f, MUTED)
+        clock = text(26f, pal.text)
+        battery = text(14f, pal.muted)
         panel.addView(clock)
         panel.addView(battery)
+        recLabel = text(13f, REC_RED).apply { visibility = View.GONE }
+        panel.addView(recLabel)
         appColumn = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL }
         panel.addView(appColumn, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f).apply { topMargin = dp(10f) })
-        recButton = button(Glyph.REC, HIGH, MUTED, getString(R.string.dashcam)) { DashcamService.toggle(this) }
+        recButton = button(Glyph.REC, pal.high, pal.muted, getString(R.string.dashcam)) { DashcamService.toggle(this) }
+        // long press rec -> clip viewer
+        recButton.setOnLongClickListener { openDash(SCREEN_CLIPS); true }
         panel.addView(recButton)
-        panel.addView(button(Glyph.BACK, HIGH, TEXT, getString(R.string.back)) { NavAccessibility.back() }.withTopMargin(dp(10f)))
-        panel.addView(button(Glyph.HOME, HIGH, TEXT, getString(R.string.home)) { openDash(SCREEN_DASH) }.withTopMargin(dp(10f)))
+        panel.addView(button(Glyph.BACK, pal.high, pal.text, getString(R.string.back)) { NavAccessibility.back() }.withTopMargin(dp(10f)))
+        panel.addView(button(Glyph.HOME, pal.high, pal.text, getString(R.string.home)) { openDash(SCREEN_DASH) }.withTopMargin(dp(10f)))
         appsButton = button(Glyph.GRID, accent, Color.BLACK, getString(R.string.apps)) { openDash(SCREEN_APPS) }
         panel.addView(appsButton.withTopMargin(dp(10f)))
         val lp = overlayParams(width, s.y, 0, 0, touchable = true).apply {
@@ -182,7 +215,7 @@ class RailService : Service() {
             Triple(left, 0, 0), Triple(s.x - r, 0, 1),
             Triple(left, s.y - r, 2), Triple(s.x - r, s.y - r, 3),
         ).forEach { (x, y, which) ->
-            val v = CornerView(this, which)
+            val v = CornerView(this, which, pal.bg)
             val lp = overlayParams(r, r, x, y, touchable = false)
             wm.addView(v, lp)
             windows += v
@@ -222,7 +255,27 @@ class RailService : Service() {
             }.collect { railApps = it; renderApps(g) }
         }
         scope.launch {
-            g.power.state().collect { p -> battery.text = (if (p.charging) "⚡" else "") + "${p.percent}%" }
+            combine(g.power.state(), g.dashcamPrefs.autoRecord()) { p, auto -> p to auto }.collect { (p, auto) ->
+                lastBattery = (if (p.charging) "⚡" else "") + "${p.percent}%"
+                battery.text = lastBattery
+                // auto dashcam: plug = car on -> rec ; unplug = car off -> stop
+                if (auto && p.charging != wasCharging) {
+                    if (p.charging && !DashcamService.recording.value) DashcamService.start(this@RailService)
+                    else if (!p.charging && wasCharging == true) DashcamService.stop(this@RailService)
+                }
+                wasCharging = p.charging
+            }
+        }
+        scope.launch {
+            DashcamService.recording.collect { on ->
+                applyRec(on)
+                recStarted = if (on) System.currentTimeMillis() else 0L
+                main.removeCallbacks(recTick)
+                if (on) recTick.run()
+            }
+        }
+        scope.launch {
+            g.prefs.themeMode().collect { m -> themeMode = m; applyTheme() }
         }
         scope.launch {
             g.prefs.ambient().collect { a ->
@@ -234,6 +287,30 @@ class RailService : Service() {
         scope.launch {
             NavAccessibility.current.collect { foreground = it; renderApps(g) }
         }
+    }
+
+    private fun applyRec(on: Boolean) {
+        val img = recButton.getChildAt(0) as ImageView
+        (img.drawable as GlyphDrawable).setColor(if (on) Color.WHITE else pal.muted)
+        (recButton.background as GradientDrawable).setColor(if (on) REC_RED else pal.high)
+        recLabel.visibility = if (on) View.VISIBLE else View.GONE
+    }
+
+    // rebuild windows only when light <-> dark flips
+    private fun applyTheme() {
+        val dark = themeMode.isDark(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
+        val next = if (dark) DARK else LIGHT
+        if (next == pal) return
+        pal = next
+        windows.forEach { try { wm.removeView(it) } catch (e: Exception) { } }
+        windows.clear()
+        addRail()
+        addCorners()
+        updateClock()
+        battery.text = lastBattery
+        (appsButton.background as GradientDrawable).setColor(accent)
+        applyRec(DashcamService.recording.value)
+        renderApps(AppGraph.get(this))
     }
 
     private fun renderApps(g: AppGraph) {
@@ -272,8 +349,8 @@ class RailService : Service() {
     }
 
     // inverse quarter circle in bg colour -> app area looks rounded
-    private class CornerView(context: Context, private val which: Int) : View(context) {
-        private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = BG }
+    private class CornerView(context: Context, private val which: Int, bg: Int) : View(context) {
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bg }
         override fun onDraw(canvas: Canvas) {
             val w = width.toFloat()
             val h = height.toFloat()
@@ -288,18 +365,22 @@ class RailService : Service() {
         }
     }
 
+    data class RailPalette(val bg: Int, val panel: Int, val high: Int, val text: Int, val muted: Int)
+
     companion object {
         const val EXTRA_SCREEN = "screen"
         const val SCREEN_DASH = "dash"
         const val SCREEN_APPS = "apps"
+        const val SCREEN_CLIPS = "clips"
         const val RAIL_DP = 112f
         const val CORNER_DP = 18f
-        val BG = Color.rgb(0x0A, 0x0B, 0x0C)
-        val PANEL = Color.rgb(0x15, 0x17, 0x1A)
-        val HIGH = Color.rgb(0x25, 0x28, 0x2D)
-        val TEXT = Color.rgb(0xF2, 0xF3, 0xF5)
-        val MUTED = Color.rgb(0xAD, 0xB2, 0xBB)
+        // same tones as compose scheme ; Theme.kt
+        val DARK = RailPalette(Color.rgb(0x0A, 0x0B, 0x0C), Color.rgb(0x15, 0x17, 0x1A), Color.rgb(0x25, 0x28, 0x2D),
+            Color.rgb(0xF2, 0xF3, 0xF5), Color.rgb(0xAD, 0xB2, 0xBB))
+        val LIGHT = RailPalette(Color.rgb(0xE8, 0xEB, 0xEF), Color.rgb(0xF6, 0xF7, 0xF9), Color.rgb(0xE1, 0xE4, 0xE9),
+            Color.rgb(0x15, 0x17, 0x1A), Color.rgb(0x55, 0x5B, 0x66))
         val REC_RED = Color.rgb(0xFF, 0x4A, 0x3D)
+        val REC_DIM = Color.rgb(0x8A, 0x26, 0x20)
 
         fun railWidthPx(context: Context): Int =
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, RAIL_DP, context.resources.displayMetrics).toInt()

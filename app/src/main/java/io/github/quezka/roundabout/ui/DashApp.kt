@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-enum class Screen { DASH, APPS, SETTINGS }
+enum class Screen { DASH, APPS, SETTINGS, CLIPS }
 
 @Composable
 fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
@@ -35,6 +35,7 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
     val music by vm.music.collectAsStateWithLifecycle()
     val favorites by vm.favorites.collectAsStateWithLifecycle()
     val autoRec by vm.autoRecord.collectAsStateWithLifecycle()
+    val themeMode by vm.themeMode.collectAsStateWithLifecycle()
     val recording by DashcamService.recording.collectAsStateWithLifecycle()
     val lenses by DashcamService.lenses.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -96,6 +97,21 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
             dashcam = DashcamUi(auto = autoRec, recording = recording, lenses = lenses.map { it.tag }, folder = vm.clipDir),
             onAutoRecord = vm::setAutoRecord,
             onToggleRecording = { DashcamService.toggle(context) },
+            onOpenClips = { screen = Screen.CLIPS },
+            themeMode = themeMode,
+            onThemeMode = vm::setThemeMode,
         )
+        Screen.CLIPS -> {
+            val clips by vm.clips.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) { vm.refreshClips() }
+            ClipsScreen(
+                clips = clips,
+                path = vm::clipPath,
+                thumb = vm.clipThumb,
+                onBack = { screen = Screen.DASH },
+                onSave = vm::protect,
+                onDelete = vm::delete,
+            )
+        }
     }
 }

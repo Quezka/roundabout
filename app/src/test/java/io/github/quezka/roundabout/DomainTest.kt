@@ -3,6 +3,8 @@ package io.github.quezka.roundabout
 import io.github.quezka.roundabout.domain.Ambient
 import io.github.quezka.roundabout.domain.AppCatalog
 import io.github.quezka.roundabout.domain.AppEntry
+import io.github.quezka.roundabout.domain.Clip
+import io.github.quezka.roundabout.domain.ClipFilter
 import io.github.quezka.roundabout.domain.DashClock
 import io.github.quezka.roundabout.domain.Greeting
 import io.github.quezka.roundabout.domain.MediaState
@@ -96,6 +98,16 @@ class DomainTest {
         assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(io.github.quezka.roundabout.domain.Lens.CABIN, true))
         assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(io.github.quezka.roundabout.domain.Lens.ROAD, false))
         assertTrue(p.durationMs(io.github.quezka.roundabout.domain.Lens.ROAD) > p.durationMs(io.github.quezka.roundabout.domain.Lens.CABIN))
+    }
+
+    @Test fun clipFilterAndLens() {
+        val a = Clip("20261119_090000_road.mp4", 1, 1)
+        val b = Clip("20261119_090300_cabin.mp4", 1, 2)
+        val c = Clip("20261119_090400_road.mp4", 1, 3, saved = true)
+        assertEquals(io.github.quezka.roundabout.domain.Lens.CABIN, b.lens)
+        assertEquals(listOf(c, b, a), ClipFilter.ALL.apply(listOf(a, b, c)))
+        assertEquals(listOf(c, a), ClipFilter.ROAD.apply(listOf(a, b, c)))
+        assertEquals(listOf(c), ClipFilter.SAVED.apply(listOf(a, b, c)))
     }
 
     @Test fun clipNameSortsByTime() {

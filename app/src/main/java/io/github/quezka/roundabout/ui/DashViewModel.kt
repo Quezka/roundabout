@@ -6,12 +6,14 @@ import io.github.quezka.roundabout.di.AppGraph
 import io.github.quezka.roundabout.domain.Ambient
 import io.github.quezka.roundabout.domain.AppCatalog
 import io.github.quezka.roundabout.domain.AppEntry
+import io.github.quezka.roundabout.domain.Clip
 import io.github.quezka.roundabout.domain.Favorites
 import io.github.quezka.roundabout.domain.MediaAction
 import io.github.quezka.roundabout.domain.MediaState
 import io.github.quezka.roundabout.domain.Role
 import io.github.quezka.roundabout.domain.RoleDefaults
 import io.github.quezka.roundabout.domain.Speed
+import io.github.quezka.roundabout.domain.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -49,6 +51,9 @@ class DashViewModel(private val graph: AppGraph) : ViewModel() {
         }
         .stateIn(viewModelScope, live, null)
 
+    val themeMode: StateFlow<ThemeMode> = graph.prefs.themeMode().stateIn(viewModelScope, live, ThemeMode.AUTO)
+    fun setThemeMode(m: ThemeMode) = graph.prefs.setThemeMode(m)
+
     val ambient: StateFlow<Ambient> = graph.prefs.ambient().stateIn(viewModelScope, live, Ambient.ORANGE)
 
     val mediaAccess = MutableStateFlow(graph.media.hasAccess())
@@ -82,6 +87,17 @@ class DashViewModel(private val graph: AppGraph) : ViewModel() {
     val autoRecord: StateFlow<Boolean> = graph.dashcamPrefs.autoRecord().stateIn(viewModelScope, live, false)
     val clipDir: String = graph.clipDir
     fun setAutoRecord(on: Boolean) = graph.dashcamPrefs.setAutoRecord(on)
+
+    private val clipRefresh = MutableStateFlow(0)
+    val clips: StateFlow<List<Clip>> = clipRefresh
+        .map { graph.clips.clips() + graph.clips.saved() }
+        .flowOn(Dispatchers.IO)
+        .stateIn(viewModelScope, live, emptyList())
+    val clipThumb = graph.clipThumb
+    fun clipPath(c: Clip) = graph.clips.path(c)
+    fun refreshClips() { clipRefresh.value++ }
+    fun protect(c: Clip) { graph.clips.protect(c); refreshClips() }
+    fun delete(c: Clip) { graph.clips.delete(c); refreshClips() }
 
     // access may change while user @ settings
     fun onResume() {

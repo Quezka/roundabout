@@ -5,12 +5,27 @@ import kotlinx.coroutines.flow.Flow
 // road = back cam ; cabin = front cam
 enum class Lens(val tag: String) { ROAD("road"), CABIN("cabin") }
 
-data class Clip(val name: String, val bytes: Long, val modified: Long)
+data class Clip(val name: String, val bytes: Long, val modified: Long, val saved: Boolean = false) {
+    val lens: Lens? get() = Lens.entries.firstOrNull { name.endsWith("_" + it.tag + ".mp4") }
+}
+
+enum class ClipFilter { ALL, ROAD, CABIN, SAVED;
+    fun apply(clips: List<Clip>): List<Clip> = when (this) {
+        ALL -> clips
+        ROAD -> clips.filter { it.lens == Lens.ROAD }
+        CABIN -> clips.filter { it.lens == Lens.CABIN }
+        SAVED -> clips.filter { it.saved }
+    }.sortedByDescending { it.modified }
+}
 
 interface ClipStore {
+    // loop clips only ; saved never pruned
     fun clips(): List<Clip>
+    fun saved(): List<Clip>
+    fun protect(clip: Clip): Boolean
     fun delete(clip: Clip)
     fun freeBytes(): Long
+    fun path(clip: Clip): String
 }
 
 object DashcamPolicy {

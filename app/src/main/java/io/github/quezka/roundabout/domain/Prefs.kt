@@ -18,7 +18,22 @@ enum class Ambient(val argb: Long) {
     }
 }
 
+// auto = dark @ night like android auto
+enum class ThemeMode { AUTO, LIGHT, DARK;
+    fun isDark(hour: Int): Boolean = when (this) {
+        AUTO -> hour !in 7..18
+        LIGHT -> false
+        DARK -> true
+    }
+
+    companion object {
+        fun parse(name: String?): ThemeMode = entries.firstOrNull { it.name == name } ?: AUTO
+    }
+}
+
 interface DashPrefs {
+    fun themeMode(): Flow<ThemeMode>
+    fun setThemeMode(mode: ThemeMode)
     fun ambient(): Flow<Ambient>
     fun setAmbient(ambient: Ambient)
     fun rolePackage(role: Role): Flow<String?>

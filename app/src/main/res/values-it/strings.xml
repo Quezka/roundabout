@@ -42,4 +42,20 @@
     <string name="dashcam_stop">Ferma registrazione</string>
     <string name="dashcam_info">3 minuti strada, poi 1 minuto abitacolo, a turno, le più vecchie vengono cancellate. Cartella: %1$s</string>
     <string name="dashcam_lenses">In registrazione: %1$s</string>
+    <string name="lens_road">strada</string>
+    <string name="lens_cabin">abitacolo</string>
+    <string name="clips_title">Registrazioni</string>
+    <string name="filter_all">Tutte</string>
+    <string name="filter_saved">Salvate</string>
+    <string name="lens_road_title">Strada</string>
+    <string name="lens_cabin_title">Abitacolo</string>
+    <string name="save_clip">Salva</string>
+    <string name="delete_clip">Elimina</string>
+    <string name="delete_confirm">Eliminare questa clip? Non si può annullare.</string>
+    <string name="no_clips">Ancora nessuna registrazione</string>
+    <string name="open_clips">Guarda le registrazioni</string>
+    <string name="theme">Tema</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
 </resources>

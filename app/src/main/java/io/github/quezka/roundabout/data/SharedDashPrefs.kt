@@ -7,6 +7,7 @@ import io.github.quezka.roundabout.domain.DashPrefs
 import io.github.quezka.roundabout.domain.DashcamPrefs
 import io.github.quezka.roundabout.domain.Favorites
 import io.github.quezka.roundabout.domain.Role
+import io.github.quezka.roundabout.domain.ThemeMode
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -24,6 +25,12 @@ class SharedDashPrefs(context: Context) : DashPrefs, DashcamPrefs {
 
     override fun setRolePackage(role: Role, packageName: String?) {
         sp.edit().putString(roleKey(role), packageName).apply()
+    }
+
+    override fun themeMode(): Flow<ThemeMode> = watch(KEY_THEME) { ThemeMode.parse(sp.getString(KEY_THEME, null)) }
+
+    override fun setThemeMode(mode: ThemeMode) {
+        sp.edit().putString(KEY_THEME, mode.name).apply()
     }
 
     override fun favorites(): Flow<List<String>> = watch(KEY_FAVORITES) { Favorites.decode(sp.getString(KEY_FAVORITES, null)) }
@@ -51,5 +58,6 @@ class SharedDashPrefs(context: Context) : DashPrefs, DashcamPrefs {
         const val KEY_AMBIENT = "ambient"
         const val KEY_FAVORITES = "favorites"
         const val KEY_AUTO_REC = "dashcam_auto"
+        const val KEY_THEME = "theme"
     }
 }
