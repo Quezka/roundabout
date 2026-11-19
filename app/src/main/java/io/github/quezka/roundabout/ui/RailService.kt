@@ -183,7 +183,7 @@ class RailService : Service() {
         panel.addView(button(Glyph.HOME, pal.high, pal.text, getString(R.string.home)) { openDash(SCREEN_DASH) }.withTopMargin(dp(10f)))
         appsButton = button(Glyph.GRID, accent, Color.BLACK, getString(R.string.apps)) { openDash(SCREEN_APPS) }
         panel.addView(appsButton.withTopMargin(dp(10f)))
-        val lp = overlayParams(width, s.y, 0, 0, touchable = true).apply {
+        val lp = overlayParams(width, minOf(s.x, s.y), 0, 0, touchable = true).apply {
             // overlay orientation -> forces landscape over every app ; overscan math needs fixed rotation
             screenOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
