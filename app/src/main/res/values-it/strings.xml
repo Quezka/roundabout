@@ -40,7 +40,7 @@
     <string name="dashcam_auto">Registra quando è in carica</string>
     <string name="dashcam_start">Avvia registrazione</string>
     <string name="dashcam_stop">Ferma registrazione</string>
-    <string name="dashcam_info">3 minuti strada, poi 1 minuto abitacolo, a turno, le più vecchie vengono cancellate. Cartella: %1$s</string>
+    <string name="dashcam_info">Telecamera posteriore, clip da 3 minuti, le più vecchie vengono cancellate. Un urto o una pressione lunga su REC salva la clip. Cartella: %1$s</string>
     <string name="dashcam_lenses">In registrazione: %1$s</string>
     <string name="lens_road">strada</string>
     <string name="lens_cabin">abitacolo</string>
@@ -58,4 +58,5 @@
     <string name="theme_auto">Auto</string>
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
+    <string name="event_saved">Evento salvato: questa clip e la precedente vengono tenute</string>
 </resources>

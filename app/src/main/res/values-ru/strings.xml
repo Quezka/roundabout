@@ -40,7 +40,7 @@
     <string name="dashcam_auto">Записывать при зарядке</string>
     <string name="dashcam_start">Начать запись</string>
     <string name="dashcam_stop">Остановить запись</string>
-    <string name="dashcam_info">3 минуты дорога, затем 1 минута салон, по очереди, старые удаляются. Папка: %1$s</string>
+    <string name="dashcam_info">Задняя камера, ролики по 3 минуты, старые удаляются. Удар или долгое нажатие на REC сохраняет ролик. Папка: %1$s</string>
     <string name="dashcam_lenses">Запись: %1$s</string>
     <string name="lens_road">дорога</string>
     <string name="lens_cabin">салон</string>
@@ -58,4 +58,5 @@
     <string name="theme_auto">Авто</string>
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
+    <string name="event_saved">Событие сохранено: этот и предыдущий ролики сохранены</string>
 </resources>

@@ -172,8 +172,12 @@ class RailService : Service() {
         appColumn = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL }
         panel.addView(appColumn, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f).apply { topMargin = dp(10f) })
         recButton = button(Glyph.REC, pal.high, pal.muted, getString(R.string.dashcam)) { DashcamService.toggle(this) }
-        // long press rec -> clip viewer
-        recButton.setOnLongClickListener { openDash(SCREEN_CLIPS); true }
+        // long press rec: recording -> save event ; idle -> clip viewer
+        recButton.setOnLongClickListener {
+            if (DashcamService.recording.value && DashcamService.saveEvent()) Unit
+            else openDash(SCREEN_CLIPS)
+            true
+        }
         panel.addView(recButton)
         panel.addView(button(Glyph.BACK, pal.high, pal.text, getString(R.string.back)) { NavAccessibility.back() }.withTopMargin(dp(10f)))
         panel.addView(button(Glyph.HOME, pal.high, pal.text, getString(R.string.home)) { openDash(SCREEN_DASH) }.withTopMargin(dp(10f)))
@@ -272,6 +276,11 @@ class RailService : Service() {
                 recStarted = if (on) System.currentTimeMillis() else 0L
                 main.removeCallbacks(recTick)
                 if (on) recTick.run()
+            }
+        }
+        scope.launch {
+            DashcamService.events.collect {
+                android.widget.Toast.makeText(this@RailService, R.string.event_saved, android.widget.Toast.LENGTH_SHORT).show()
             }
         }
         scope.launch {

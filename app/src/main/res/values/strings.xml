@@ -41,7 +41,7 @@
     <string name="dashcam_auto">Record while charging</string>
     <string name="dashcam_start">Start recording</string>
     <string name="dashcam_stop">Stop recording</string>
-    <string name="dashcam_info">Road 3 min, then cabin 1 min, in turn, oldest deleted first. Folder: %1$s</string>
+    <string name="dashcam_info">Rear camera, 3-minute clips, oldest deleted first. A bump or a long press on REC keeps the clip. Folder: %1$s</string>
     <string name="dashcam_lenses">Recording: %1$s</string>
     <string name="lens_road">road</string>
     <string name="lens_cabin">cabin</string>
@@ -59,4 +59,5 @@
     <string name="theme_auto">Auto</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="event_saved">Event saved: this clip and the previous one are kept</string>
 </resources>

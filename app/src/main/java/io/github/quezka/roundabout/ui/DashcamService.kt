@@ -27,6 +27,17 @@ class DashcamService : Service() {
     private val recorders = mutableMapOf<Lens, DashRecorder>()
     private var current: Lens? = null
     private var cabinWorks = true
+    private var currentName: String? = null
+    private var lastName: String? = null
+    private var saveCurrent = false
+    private var lastEvent = 0L
+    private val sensors by lazy { getSystemService(SENSOR_SERVICE) as android.hardware.SensorManager }
+    private val impact = object : android.hardware.SensorEventListener {
+        override fun onSensorChanged(e: android.hardware.SensorEvent) {
+            if (io.github.quezka.roundabout.domain.ImpactDetector.isImpact(e.values[0], e.values[1], e.values[2])) markEvent()
+        }
+        override fun onAccuracyChanged(s: android.hardware.Sensor?, a: Int) {}
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -40,6 +51,24 @@ class DashcamService : Service() {
             state.value = true
             next()
         }
+        // ~5 hz ; only while recording
+        sensors.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER)?.let {
+            sensors.registerListener(impact, it, android.hardware.SensorManager.SENSOR_DELAY_NORMAL, handler)
+        }
+        instance = this
+    }
+
+    // keep prev clip now + current clip when it closes
+    fun markEvent() {
+        handler.post {
+            val now = System.currentTimeMillis()
+            if (now - lastEvent < io.github.quezka.roundabout.domain.ImpactDetector.COOLDOWN_MS) return@post
+            lastEvent = now
+            val store = AppGraph.get(this).clips
+            lastName?.let { n -> store.clips().firstOrNull { it.name == n }?.let(store::protect) }
+            saveCurrent = true
+            events.tryEmit(now)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -51,6 +80,15 @@ class DashcamService : Service() {
     private fun next() {
         current?.let { recorders[it]?.close() }
         recorders.clear()
+        val finished = currentName
+        if (finished != null) {
+            if (saveCurrent) {
+                val store = AppGraph.get(this).clips
+                store.clips().firstOrNull { it.name == finished }?.let(store::protect)
+                saveCurrent = false
+            }
+            lastName = finished
+        }
         prune()
         var lens = DashcamPolicy.nextLens(current, cabinWorks)
         var r = AppGraph.get(this).recorder(lens)
@@ -66,6 +104,7 @@ class DashcamService : Service() {
             c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND),
         )
         current = lens
+        currentName = name
         recorders[lens] = r
         lenses.value = setOf(lens)
         if (!r.start(name, DashcamPolicy.durationMs(lens)) { handler.post { next() } }) {
@@ -81,6 +120,17 @@ class DashcamService : Service() {
     }
 
     override fun onDestroy() {
+        instance = null
+        sensors.unregisterListener(impact)
+        // stop -> close segment first ; then save if event pending
+        handler.post {
+            recorders.values.forEach { it.close() }
+            recorders.clear()
+            if (saveCurrent) currentName?.let { n ->
+                val store = AppGraph.get(this).clips
+                store.clips().firstOrNull { it.name == n }?.let(store::protect)
+            }
+        }
         handler.post {
             recorders.values.forEach { it.close() }
             recorders.clear()
@@ -115,6 +165,11 @@ class DashcamService : Service() {
         private const val ACTION_STOP = "stop"
         private val state = MutableStateFlow(false)
         val recording: StateFlow<Boolean> get() = state
+        @Volatile private var instance: DashcamService? = null
+        val events = kotlinx.coroutines.flow.MutableSharedFlow<Long>(extraBufferCapacity = 4)
+
+        // manual save ; false if not recording
+        fun saveEvent(): Boolean = instance?.let { it.markEvent(); true } ?: false
         // lenses actually recording
         val lenses = MutableStateFlow<Set<Lens>>(emptySet())
 

@@ -94,7 +94,8 @@ class DomainTest {
     @Test fun dashcamAlternatesLenses() {
         val p = io.github.quezka.roundabout.domain.DashcamPolicy
         assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(null, true))
-        assertEquals(io.github.quezka.roundabout.domain.Lens.CABIN, p.nextLens(io.github.quezka.roundabout.domain.Lens.ROAD, true))
+        // cabin off by user choice
+        assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(io.github.quezka.roundabout.domain.Lens.ROAD, true))
         assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(io.github.quezka.roundabout.domain.Lens.CABIN, true))
         assertEquals(io.github.quezka.roundabout.domain.Lens.ROAD, p.nextLens(io.github.quezka.roundabout.domain.Lens.ROAD, false))
         assertTrue(p.durationMs(io.github.quezka.roundabout.domain.Lens.ROAD) > p.durationMs(io.github.quezka.roundabout.domain.Lens.CABIN))
@@ -108,6 +109,17 @@ class DomainTest {
         assertEquals(listOf(c, b, a), ClipFilter.ALL.apply(listOf(a, b, c)))
         assertEquals(listOf(c, a), ClipFilter.ROAD.apply(listOf(a, b, c)))
         assertEquals(listOf(c), ClipFilter.SAVED.apply(listOf(a, b, c)))
+    }
+
+    @Test fun impactNeedsBigJolt() {
+        val d = io.github.quezka.roundabout.domain.ImpactDetector
+        assertFalse(d.isImpact(0f, 0f, 9.81f))
+        // hard brake ~0.6g sideways
+        assertFalse(d.isImpact(5.9f, 0f, 9.81f))
+        // crash ~3g
+        assertTrue(d.isImpact(29f, 0f, 9.81f))
+        // free fall
+        assertTrue(d.isImpact(0f, 0f, 0f))
     }
 
     @Test fun clipNameSortsByTime() {
