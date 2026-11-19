@@ -56,13 +56,15 @@ tablet = AA head unit ; no Headunit Reloaded. reverse-engineer + implement the p
 - `github.com/mretallack/AndroidAuto` (Kotlin/Java architecture writeup)
 
 ## roadmap
-1. framing + tests  [done]
-2. control state machine: version -> tls -> auth -> svc-discovery -> channel-open
-3. transport: USB AOAP ; then WiFi (WPP + TCP/TLS)
-4. TLS with GAL CA (mutual, HU=client)
-5. proto-lite codegen
-6. channels: video/audio/input/sensor
-7. render AA video fullscreen in roundabout + forward touch
+1. framing + tests  [done -> aa/AaFraming.kt]
+2. control state machine (version -> tls -> auth -> discovery -> channel-open)  [done -> aa/AaControl.kt + aa/AaHandshake.kt]
+3. transport: USB AOAP ; then WiFi (WPP + TCP/TLS)  [WPP framing done -> aa/Wpp.kt ; BT SPP + TCP + TLS todo]
+4. TLS with GAL CA (mutual, HU=client)  [todo]
+5. proto-lite codegen  [todo]
+6. channels: video/audio/input/sensor  [todo]
+7. render AA video fullscreen in roundabout + forward touch  [todo]
+
+## progress: 16 unit tests green (framing/control/handshake/wpp)
 
 ## risk
 - GAL CA cert required -> without it, auth fails ; get from aasdk repo
