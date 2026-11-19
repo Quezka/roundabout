@@ -21,6 +21,7 @@ object Dash {
     val bg = Color(0xFF0F1012)
     val text = Color(0xFFF2F3F5)
     val muted = Color(0xFFADB2BB)
+    const val RAIL_DP = 112 // native rail width (sync RailService.RAIL_DP) ; app content left inset
 }
 
 val Manrope = FontFamily(

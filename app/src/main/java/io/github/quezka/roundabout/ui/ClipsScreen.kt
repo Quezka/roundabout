@@ -103,7 +103,7 @@ fun ClipsScreen(
         return
     }
 
-    Column(Modifier.fillMaxSize().background(cs.surfaceContainerLowest).padding(horizontal = 28.dp, vertical = 20.dp)) {
+    Column(Modifier.fillMaxSize().background(cs.surfaceContainerLowest).padding(start = (Dash.RAIL_DP + 28).dp, end = 28.dp, top = 20.dp, bottom = 20.dp)) {
         ScreenHeader(stringResource(R.string.clips_title), onBack)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 14.dp)) {
             ClipFilter.entries.forEach { f ->

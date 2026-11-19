@@ -73,14 +73,14 @@ fun AppsScreen(
 ) {
     val cs = MaterialTheme.colorScheme
     var menuFor by remember { mutableStateOf<AppEntry?>(null) }
-    Column(Modifier.fillMaxSize().background(cs.surfaceContainerLowest).padding(horizontal = 28.dp, vertical = 20.dp)) {
+    Column(Modifier.fillMaxSize().background(cs.surfaceContainerLowest).padding(start = (Dash.RAIL_DP + 28).dp, end = 28.dp, top = 20.dp, bottom = 20.dp)) {
         ScreenHeader(stringResource(R.string.apps), onBack)
         LazyVerticalGrid(
             columns = GridCells.Adaptive(136.dp),
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.testTag("app_grid"),
+            modifier = Modifier.weight(1f).testTag("app_grid"),
         ) {
             items(apps, key = { it.packageName + "/" + it.activity }) { app ->
                 Column(

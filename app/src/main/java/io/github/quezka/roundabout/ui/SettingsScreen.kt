@@ -60,7 +60,7 @@ fun SettingsScreen(
 ) {
     val cs = MaterialTheme.colorScheme
     Column(
-        Modifier.fillMaxSize().background(cs.surfaceContainerLowest).padding(horizontal = 28.dp, vertical = 20.dp)
+        Modifier.fillMaxSize().background(cs.surfaceContainerLowest).padding(start = (Dash.RAIL_DP + 28).dp, end = 28.dp, top = 20.dp, bottom = 20.dp)
             .verticalScroll(rememberScrollState()),
     ) {
         ScreenHeader(stringResource(R.string.settings), onBack)

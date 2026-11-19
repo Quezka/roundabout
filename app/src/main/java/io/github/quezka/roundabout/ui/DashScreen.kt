@@ -77,7 +77,7 @@ sealed interface DashIntent {
 @Composable
 fun DashScreen(ui: DashUi, icon: IconLoader, onIntent: (DashIntent) -> Unit) {
     val cs = MaterialTheme.colorScheme
-    Row(Modifier.fillMaxSize().background(cs.surfaceContainerLowest)) {
+    Row(Modifier.fillMaxSize().background(cs.surfaceContainerLowest).padding(start = Dash.RAIL_DP.dp)) {
         Row(Modifier.weight(1f).fillMaxHeight().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             DriveCard(ui, onIntent, Modifier.weight(0.5f).fillMaxHeight())
             MediaCard(ui, icon, onIntent, Modifier.weight(0.5f).fillMaxHeight())
