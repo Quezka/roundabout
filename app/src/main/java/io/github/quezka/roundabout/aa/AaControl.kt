@@ -30,7 +30,11 @@ object AaControl {
 
     // [msgId:2 BE][major:1][minor:1] = 4 bytes
     fun versionRequest(major: Int = MAJOR, minor: Int = MINOR): ByteArray =
-        byteArrayOf(0x00, 0x01, major.toByte(), minor.toByte())
+        control(MsgId.VERSION_REQUEST, byteArrayOf(major.toByte(), minor.toByte()))
+
+    // [msgId:2 BE][body]
+    fun control(msgId: Int, body: ByteArray): ByteArray =
+        byteArrayOf((msgId shr 8).toByte(), msgId.toByte()) + body
 
     data class VersionResponse(val major: Int, val minor: Int, val status: Int)
 
