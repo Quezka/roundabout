@@ -11,6 +11,7 @@ object Proto {
         fun int(field: Int, v: Int): Writer = u64(field, v.toLong())
         // encode even when 0 (required proto2 fields)
         fun intAlways(field: Int, v: Int): Writer { tag(field, Wire.VARINT); varint(v.toLong()); return this }
+        fun u64Always(field: Int, v: Long): Writer { tag(field, Wire.VARINT); varint(v); return this }
         fun u64(field: Int, v: Long): Writer {
             if (v != 0L) { tag(field, Wire.VARINT); varint(v) }
             return this
