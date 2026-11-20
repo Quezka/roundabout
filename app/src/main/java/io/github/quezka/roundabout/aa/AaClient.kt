@@ -20,14 +20,17 @@ class AaClient(private val ctx: Context) {
     private var audioSink: AudioSink? = null
     private var video: AvChannel? = null
     private var audio: AvChannel? = null
+    private var sensors: SensorChannel? = null
     @Volatile private var inputOpen = false
+    @Volatile private var night = true
     @Volatile private var surface: Surface? = null
 
     private fun set(p: Phase, d: String) { phase = p; detail = d }
 
-    fun connectWireless(host: String, port: Int, surface: Surface, w: Int = 800, h: Int = 480) {
+    fun connectWireless(host: String, port: Int, surface: Surface, w: Int = 800, h: Int = 480, night: Boolean = true) {
         disconnect()
         this.surface = surface
+        this.night = night
         set(Phase.CONNECTING, "$host:$port")
         val t = Thread {
             try {
@@ -62,6 +65,7 @@ class AaClient(private val ctx: Context) {
 
     private fun route(ch: Int, payload: ByteArray) {
         when (ch) {
+            AaMessages.Ch.SENSOR -> sensors?.onMessage(payload)
             AaMessages.Ch.MEDIA_SINK_VIDEO -> video?.onMessage(payload)
             AaMessages.Ch.MEDIA_SINK_MEDIA_AUDIO,
             AaMessages.Ch.MEDIA_SINK_SYSTEM_AUDIO,
@@ -73,6 +77,13 @@ class AaClient(private val ctx: Context) {
     private fun onOpen(ch: Int, w: Int, h: Int) {
         val s = session ?: return
         when (ch) {
+            AaMessages.Ch.SENSOR -> {
+                val sensor = SensorChannel({ type, body -> s.sendOn(ch, AaAv.message(type, body)) }, night)
+                sensors = sensor
+                // phone may gate its ui on driving status ; send both up front
+                s.sendOn(ch, AaAv.message(AaSensors.Msg.BATCH, AaSensors.drivingStatusBatch()))
+                s.sendOn(ch, AaAv.message(AaSensors.Msg.BATCH, AaSensors.nightModeBatch(night)))
+            }
             AaMessages.Ch.MEDIA_SINK_VIDEO -> {
                 val surf = surface ?: return
                 val sink = VideoSink(surf, w, h)
@@ -111,6 +122,7 @@ class AaClient(private val ctx: Context) {
         videoSink?.release(); videoSink = null
         audioSink?.release(); audioSink = null
         video = null; audio = null
+        sensors = null
         inputOpen = false
         try { link?.close() } catch (e: Exception) { }
         link = null

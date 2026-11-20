@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -157,7 +158,8 @@ fun AaScreen(onBack: () -> Unit) {
                         onClick = {
                             val h = surfaceHolder?.surface
                             val p = port.toIntOrNull() ?: 5277
-                            if (h != null) client.connectWireless(host, p, h)
+                            val dark = cs.background.luminance() < 0.5f
+                            if (h != null) client.connectWireless(host, p, h, night = dark)
                         },
                         shape = RoundedCornerShape(18.dp),
                         modifier = Modifier.height(56.dp).testTag("aa_connect"),
