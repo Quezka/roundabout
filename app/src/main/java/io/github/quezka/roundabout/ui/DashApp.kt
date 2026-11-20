@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-enum class Screen { DASH, APPS, SETTINGS, CLIPS }
+enum class Screen { DASH, APPS, SETTINGS, CLIPS, AA }
 
 @Composable
 fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
@@ -105,7 +105,7 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
             onThemeMode = vm::setThemeMode,
             btEnabled = btEnabled,
             onBluetooth = vm::setBluetooth,
-            onAndroidAuto = vm::openAndroidAuto,
+            onAndroidAuto = { screen = Screen.AA },
             updateState = updateState,
             onCheckUpdates = vm::checkUpdates,
         )
@@ -121,5 +121,6 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
                 onDelete = vm::delete,
             )
         }
+        Screen.AA -> AaScreen(onBack = { screen = Screen.DASH })
     }
 }

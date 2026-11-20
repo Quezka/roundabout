@@ -26,4 +26,8 @@ object AaInput {
             .toByteArray()
         return AaAv.message(Msg.INPUT_REPORT, report)
     }
+
+    // KeyBindingResponse { required int32 status = 1 }
+    fun keyBindingResponse(status: Int = 0): ByteArray =
+        AaAv.message(Msg.KEY_BINDING_RESPONSE, Proto.Writer().intAlways(1, status).toByteArray())
 }

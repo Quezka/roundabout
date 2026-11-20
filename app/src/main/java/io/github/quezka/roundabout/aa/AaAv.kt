@@ -58,6 +58,10 @@ object AaAv {
     fun message(type: Int, body: ByteArray): ByteArray =
         byteArrayOf((type shr 8).toByte(), type.toByte()) + body
 
+    // VideoFocusRequestNotification { mode = 2 } ; PROJECTED = 1
+    fun videoFocusRequest(mode: Int = 1): ByteArray =
+        message(Msg.VIDEO_FOCUS_REQUEST, Proto.Writer().int(2, mode).toByteArray())
+
     fun msgType(payload: ByteArray): Int =
         ((payload[0].toInt() and 0xFF) shl 8) or (payload[1].toInt() and 0xFF)
 }

@@ -6,17 +6,22 @@ class AaSession(
     private val link: ByteLink,
     private val onServiceFrame: (channel: Int, payload: ByteArray) -> Unit,
     private val onState: (AaHandshake.State) -> Unit = {},
+    private val onChannelOpen: (channel: Int) -> Unit = {},
 ) {
     val handshake = AaHandshake()
     val openChannels = HashSet<Int>()
     private val parser = AaFraming.Parser()
     private val reasm = AaFraming.Reassembler()
+    private val writeLock = Any()
     @Volatile private var run = true
 
     fun start() { send(AaControl.CH, AaControl.versionRequest()) }
 
+    // public write on any channel (av acks, input reports, focus requests)
+    fun sendOn(channel: Int, payload: ByteArray) = send(channel, payload)
+
     private fun send(channel: Int, payload: ByteArray) {
-        for (f in AaFraming.encode(channel, payload)) link.write(AaFraming.bytes(f))
+        synchronized(writeLock) { for (f in AaFraming.encode(channel, payload)) link.write(AaFraming.bytes(f)) }
     }
 
     // blocking read loop ; call from a worker thread
@@ -61,6 +66,7 @@ class AaSession(
         if (id == AaControl.MsgId.CHANNEL_OPEN_REQUEST) {
             send(ch, AaControl.control(AaControl.MsgId.CHANNEL_OPEN_RESPONSE, AaMessages.channelOpenResponse(AaMessages.Status.SUCCESS)))
             openChannels.add(ch)
+            onChannelOpen(ch)
             handshake.onControl(AaControl.MsgId.CHANNEL_OPEN_REQUEST, payload)
             onState(handshake.state)
             return

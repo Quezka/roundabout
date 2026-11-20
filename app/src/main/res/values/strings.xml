@@ -64,8 +64,11 @@
     <string name="bluetooth">Bluetooth</string>
     <string name="bluetooth_on">On</string>
     <string name="bluetooth_off">Off</string>
-    <string name="open_android_auto">Open Android Auto</string>
-    <string name="phone_link_hint">Needs Headunit Reloaded (gb.xxy.hr) + a WiFi hotspot.</string>
+    <string name="open_android_auto">Android Auto</string>
+    <string name="phone_link_hint">Built-in wireless Android Auto receiver — no extra app needed.</string>
+    <string name="aa_connect">Connect</string>
+    <string name="aa_host">Phone IP</string>
+    <string name="aa_port">Port</string>
     <string name="updates">Updates</string>
     <string name="version_label">Version</string>
     <string name="check_for_updates">Check for updates</string>

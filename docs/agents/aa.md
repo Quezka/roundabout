@@ -61,12 +61,20 @@ tablet = AA head unit ; no Headunit Reloaded. reverse-engineer + implement the p
 3. transport: USB AOAP + WiFi (WPP/TCP/TLS)  [done -> aa/Wpp.kt, aa/Transports.kt]
 4. TLS identity (public GAL JVC-Kenwood cert)  [done -> aa/Pkcs8.kt, aa/HeadunitTls.kt, assets/aa/*]
 5. proto messages: hand-rolled wire codec + service discovery + channel open  [done -> aa/Proto.kt, aa/AaMessages.kt]
-6. channels: video H.264 / audio PCM / input  [todo]
-7. render AA video fullscreen in roundabout + forward touch  [todo]
+6. channels: video H.264 / audio PCM / input  [done -> aa/AaAv.kt, aa/VideoSink.kt, aa/AudioSink.kt, aa/AaInput.kt]
+7. render AA video + forward touch  [done -> aa/AaClient.kt, ui/AaScreen.kt (Settings > Phone link > Android Auto)]
 
 ## progress
-- 33 unit tests green (framing/control/handshake/session/proto/messages/wpp/pkcs8)
+- 65 unit tests green (framing/control/handshake/session/proto/messages/av/input/wpp/pkcs8)
 - flow: version -> tls -> auth -> service-discovery(h264+pcm+input+sensor) -> channel-open -> RUNNING
+  -> AV setup/config -> start -> h264 to MediaCodec / pcm to AudioTrack ; touch via InputReport
+
+## how to try (wireless)
+1. phone: AA dev settings -> enable "head unit server" (starts TCP 5277)
+2. both on the same wifi (or HU hotspot), find phone ip
+3. roundabout -> Settings -> Phone link -> Android Auto -> set host/port -> Connect
+4. status: connecting -> handshake -> running (video on surface, touch forwarded)
+- wired usb (AOAP) is not wired into AaClient yet ; TcpTlsLink is the tested path
 
 ## risk
 - GAL CA cert required -> without it, auth fails ; get from aasdk repo
