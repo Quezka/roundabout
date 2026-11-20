@@ -22,7 +22,7 @@ private class FakeLink(input: ByteArray) : ByteLink {
 }
 
 class AaSessionTest {
-    private val versionReqFrame = byteArrayOf(0, 3, 0, 4, 0, 1, 1, 7)
+    private val versionReqFrame = byteArrayOf(0, 3, 0, 6, 0, 1, 0, 1, 0, 7)
 
     private fun frame(ch: Int, payload: ByteArray): ByteArray =
         AaFraming.encode(ch, payload).map { AaFraming.bytes(it) }.reduce { a, b -> a + b }
@@ -60,7 +60,7 @@ class AaSessionTest {
     }
 
     @Test fun fullHandshakeReachesRunningAndOpensChannel() {
-        val stream = frame(0, byteArrayOf(0, 2, 1, 7, 0, 0)) + // VERSION_RESPONSE ok
+        val stream = frame(0, byteArrayOf(0, 2, 0, 1, 0, 7, 0, 0)) + // VERSION_RESPONSE ok
             frame(0, byteArrayOf(0, 4, 8, 0)) +                // AUTH_COMPLETE status 0
             frame(0, byteArrayOf(0, 5)) +                      // SERVICE_DISCOVERY_REQUEST
             frame(3, byteArrayOf(0, 7, 16, 3)) +               // CHANNEL_OPEN_REQUEST ch3 (service 3)

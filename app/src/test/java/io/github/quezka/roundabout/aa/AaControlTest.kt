@@ -6,12 +6,12 @@ import org.junit.Test
 
 class AaControlTest {
     @Test fun versionRequestBytes() {
-        assertArrayEquals(byteArrayOf(0, 1, 1, 7), AaControl.versionRequest())
-        assertArrayEquals(byteArrayOf(0, 1, 1, 6), AaControl.versionRequest(1, 6))
+        assertArrayEquals(byteArrayOf(0, 1, 0, 1, 0, 7), AaControl.versionRequest())
+        assertArrayEquals(byteArrayOf(0, 1, 0, 1, 0, 6), AaControl.versionRequest(1, 6))
     }
 
     @Test fun parseVersionResponseOk() {
-        val v = AaControl.parseVersionResponse(byteArrayOf(0, 2, 1, 7, 0, 0))
+        val v = AaControl.parseVersionResponse(byteArrayOf(0, 2, 0, 1, 0, 7, 0, 0))
         assertEquals(1, v.major)
         assertEquals(7, v.minor)
         assertEquals(0, v.status)
@@ -19,7 +19,7 @@ class AaControlTest {
 
     @Test fun parseVersionResponseBadStatus() {
         // status = 0xFFFF as BE 2 bytes (negative on the wire)
-        val v = AaControl.parseVersionResponse(byteArrayOf(0, 2, 1, 7, 0xFF.toByte(), 0xFF.toByte()))
+        val v = AaControl.parseVersionResponse(byteArrayOf(0, 2, 0, 1, 0, 7, 0xFF.toByte(), 0xFF.toByte()))
         assertEquals(0xFFFF, v.status)
     }
 
@@ -59,7 +59,7 @@ class AaHandshakeTest {
         val h = AaHandshake()
         assertEquals(AaHandshake.State.AWAIT_VERSION, h.state)
 
-        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 1, 7, 0, 0))
+        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 0, 1, 0, 7, 0, 0))
         assertEquals(AaHandshake.State.AWAIT_AUTH, h.state)
         assertEquals(1, h.versionMajor)
         assertEquals(7, h.versionMinor)
@@ -78,26 +78,26 @@ class AaHandshakeTest {
 
     @Test fun badVersionFails() {
         val h = AaHandshake()
-        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 1, 7, 0x00, 0x01))
+        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 0, 1, 0, 7, 0x00, 0x01))
         assertEquals(AaHandshake.State.FAILED, h.state)
     }
 
     @Test fun badAuthFails() {
         val h = AaHandshake()
-        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 1, 7, 0, 0))
+        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 0, 1, 0, 7, 0, 0))
         h.authOk(false)
         assertEquals(AaHandshake.State.FAILED, h.state)
     }
 
     @Test fun runningIsTerminal() {
         val h = AaHandshake()
-        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 1, 7, 0, 0))
+        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 0, 1, 0, 7, 0, 0))
         h.authOk(true)
         h.onControl(AaControl.MsgId.SERVICE_DISCOVERY_REQUEST, ByteArray(0))
         h.onControl(AaControl.MsgId.CHANNEL_OPEN_REQUEST, ByteArray(0))
         assertEquals(AaHandshake.State.RUNNING, h.state)
         // further msgs do not regress
-        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 1, 7, 0, 0))
+        h.onControl(AaControl.MsgId.VERSION_RESPONSE, byteArrayOf(0, 2, 0, 1, 0, 7, 0, 0))
         assertEquals(AaHandshake.State.RUNNING, h.state)
     }
 }

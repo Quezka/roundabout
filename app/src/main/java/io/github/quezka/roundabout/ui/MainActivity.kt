@@ -52,6 +52,7 @@ class MainActivity : ComponentActivity() {
         val target = when (intent.getStringExtra(RailService.EXTRA_SCREEN)) {
             RailService.SCREEN_APPS -> Screen.APPS
             RailService.SCREEN_CLIPS -> Screen.CLIPS
+            RailService.SCREEN_AA -> Screen.AA
             else -> Screen.DASH
         }
         request.value = (request.value.first + 1) to target

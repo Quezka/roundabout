@@ -9,7 +9,32 @@ import java.util.UUID
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocket
 
-// tcp + mutual-tls (wireless AA ; phone = tls server, we = client)
+// plain tcp ; AA negotiates its own tls inside control msg 3
+class TcpLink(
+    private val host: String,
+    private val port: Int,
+) : ByteLink {
+    private var socket: Socket? = null
+
+    fun connect() {
+        val s = Socket()
+        s.connect(InetSocketAddress(host, port), 10_000)
+        s.soTimeout = 30_000 // bound dead reads ; pump treats a timeout as idle
+        s.tcpNoDelay = true
+        socket = s
+    }
+
+    override fun write(bytes: ByteArray) {
+        val o = socket!!.outputStream
+        o.write(bytes); o.flush()
+    }
+
+    override fun read(buf: ByteArray): Int = socket!!.inputStream.read(buf)
+
+    override fun close() { try { socket?.close() } catch (e: Exception) { } }
+}
+
+@Deprecated("AA tls runs inside the control channel, see AaTls")
 class TcpTlsLink(
     private val ssl: SSLContext,
     private val host: String,

@@ -29,9 +29,11 @@ object AaControl {
     const val MAJOR = 1
     const val MINOR = 7
 
-    // [msgId:2 BE][major:1][minor:1] = 4 bytes
-    fun versionRequest(major: Int = MAJOR, minor: Int = MINOR): ByteArray =
-        control(MsgId.VERSION_REQUEST, byteArrayOf(major.toByte(), minor.toByte()))
+    // [msgId:2 BE][major:2 BE][minor:2 BE]
+    fun versionRequest(major: Int = MAJOR, minor: Int = MINOR): ByteArray = control(
+        MsgId.VERSION_REQUEST,
+        byteArrayOf((major shr 8).toByte(), major.toByte(), (minor shr 8).toByte(), minor.toByte()),
+    )
 
     // [msgId:2 BE][body]
     fun control(msgId: Int, body: ByteArray): ByteArray =
@@ -39,12 +41,12 @@ object AaControl {
 
     data class VersionResponse(val major: Int, val minor: Int, val status: Int)
 
-    // [msgId:2 BE][major:1][minor:1][status:2 BE] = 6 bytes
+    // [msgId:2 BE][major:2 BE][minor:2 BE][status:2 BE] = 8 bytes
     fun parseVersionResponse(p: ByteArray): VersionResponse {
-        require(p.size >= 6) { "version response < 6 bytes" }
-        val major = p[2].toInt() and 0xFF
-        val minor = p[3].toInt() and 0xFF
-        val status = ((p[4].toInt() and 0xFF) shl 8) or (p[5].toInt() and 0xFF)
+        require(p.size >= 8) { "version response < 8 bytes" }
+        val major = ((p[2].toInt() and 0xFF) shl 8) or (p[3].toInt() and 0xFF)
+        val minor = ((p[4].toInt() and 0xFF) shl 8) or (p[5].toInt() and 0xFF)
+        val status = ((p[6].toInt() and 0xFF) shl 8) or (p[7].toInt() and 0xFF)
         return VersionResponse(major, minor, status)
     }
 
@@ -77,4 +79,8 @@ object AaControl {
     }
 
     fun byebyeReply(): ByteArray = control(MsgId.BYEBYE_RESPONSE, ByteArray(0))
+
+    // AuthResponse { required int32 status = 1 } ; the hu confirms a good tls session
+    fun authComplete(status: Int = 0): ByteArray =
+        control(MsgId.AUTH_COMPLETE, Proto.Writer().intAlways(1, status).toByteArray())
 }

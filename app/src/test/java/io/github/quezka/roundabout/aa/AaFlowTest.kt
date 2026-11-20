@@ -45,7 +45,7 @@ class AaFlowTest {
 
     @Test fun phoneExchangeThroughToVideoAck() {
         val phone =
-            frame(0, byteArrayOf(0, 2, 1, 7, 0, 0)) +        // VERSION_RESPONSE ok
+            frame(0, byteArrayOf(0, 2, 0, 1, 0, 7, 0, 0)) +        // VERSION_RESPONSE ok
                 frame(0, byteArrayOf(0, 4, 8, 0)) +           // AUTH_COMPLETE status 0
                 frame(0, byteArrayOf(0, 5)) +                 // SERVICE_DISCOVERY_REQUEST
                 frame(3, byteArrayOf(0, 7, 16, 3)) +          // CHANNEL_OPEN_REQUEST ch3

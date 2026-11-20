@@ -17,6 +17,7 @@ object Proto {
             return this
         }
         fun bool(field: Int, v: Boolean): Writer = if (v) u64(field, 1) else this
+        fun boolAlways(field: Int, v: Boolean): Writer = intAlways(field, if (v) 1 else 0)
         fun sint(field: Int, v: Int): Writer {
             if (v != 0) { tag(field, Wire.VARINT); varint(zigzag(v)) }
             return this

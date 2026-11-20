@@ -15,7 +15,7 @@ class AaClient(private val ctx: Context) {
 
     private var thread: Thread? = null
     @Volatile private var session: AaSession? = null
-    private var link: TcpTlsLink? = null
+    private var link: ByteLink? = null
     private var videoSink: VideoSink? = null
     private var audioSink: AudioSink? = null
     private var video: AvChannel? = null
@@ -27,7 +27,13 @@ class AaClient(private val ctx: Context) {
     @Volatile private var night = true
     @Volatile private var surface: Surface? = null
 
-    private fun set(p: Phase, d: String) { phase = p; detail = d }
+    private fun set(p: Phase, d: String) {
+        phase = p
+        detail = d
+        android.util.Log.i("AA", "phase=$p detail=$d")
+    }
+
+    private val log: (String) -> Unit = { android.util.Log.d("AA", it) }
 
     fun connectWireless(host: String, port: Int, surface: Surface, w: Int = AaMessages.Video.W, h: Int = AaMessages.Video.H, night: Boolean = true) {
         disconnect()
@@ -36,10 +42,10 @@ class AaClient(private val ctx: Context) {
         set(Phase.CONNECTING, "$host:$port")
         val t = Thread {
             try {
-                val tls = HeadunitTls.context(ctx)
-                val l = TcpTlsLink(tls, host, port)
+                val l = TcpLink(host, port)
                 l.connect()
                 link = l
+                val tls = AaTls(HeadunitTls.context(ctx), host, port, log)
                 val s = AaSession(
                     link = l,
                     onServiceFrame = { ch, payload -> route(ch, payload) },
@@ -51,12 +57,15 @@ class AaClient(private val ctx: Context) {
                         }
                     },
                     onChannelOpen = { ch -> onOpen(ch, w, h) },
+                    log = log,
+                    tls = tls,
                 )
                 session = s
                 s.start()
                 s.pump()
                 set(Phase.IDLE, "disconnected")
             } catch (e: Exception) {
+                android.util.Log.e("AA", "connect failed", e)
                 set(Phase.FAILED, e.message ?: e.javaClass.simpleName)
             }
         }

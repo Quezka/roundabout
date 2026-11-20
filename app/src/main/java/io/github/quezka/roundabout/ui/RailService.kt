@@ -381,6 +381,7 @@ class RailService : Service() {
         const val SCREEN_DASH = "dash"
         const val SCREEN_APPS = "apps"
         const val SCREEN_CLIPS = "clips"
+        const val SCREEN_AA = "aa"
         const val RAIL_DP = 112f
         const val CORNER_DP = 18f
         // same tones as compose scheme ; Theme.kt

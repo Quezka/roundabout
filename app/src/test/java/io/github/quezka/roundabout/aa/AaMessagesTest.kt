@@ -11,7 +11,7 @@ class AaMessagesTest {
         val r = Proto.Reader(bytes)
         val ids = ArrayList<Int>()
         val cfg = ArrayList<Int>()
-        var headUnit = false
+        val required = HashSet<Int>()
         while (!r.eof()) {
             val t = r.tag(); val f = Proto.field(t); val w = Proto.wire(t)
             when {
@@ -25,16 +25,16 @@ class AaMessagesTest {
                     }
                     ids.add(id); cfg.add(field)
                 }
-                f == 17 && w == Proto.Wire.LEN -> { headUnit = true; r.skip(w) }
-                else -> r.skip(w)
+                else -> { required.add(f); r.skip(w) }
             }
         }
         assertEquals(
             listOf(AaMessages.Ch.MEDIA_SINK_VIDEO, AaMessages.Ch.MEDIA_SINK_MEDIA_AUDIO, AaMessages.Ch.INPUT_SOURCE, AaMessages.Ch.SENSOR),
             ids,
         )
-        assertEquals(listOf(3, 3, 4, 2), cfg) // media_sink, media_sink, input_source, sensor_source
-        assertTrue(headUnit)
+        assertEquals(listOf(3, 3, 4, 2), cfg) // av_channel, av_channel, input_channel, sensor_channel
+        // every field the phone marks required must be present
+        assertTrue(required.containsAll(setOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)))
     }
 
     @Test fun channelOpenDecode() {
