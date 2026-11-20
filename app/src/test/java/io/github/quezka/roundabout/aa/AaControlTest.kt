@@ -27,6 +27,31 @@ class AaControlTest {
         assertEquals(0x0005, AaControl.msgId(byteArrayOf(0x00, 0x05, 0x42)))
         assertEquals(0x000b, AaControl.msgId(AaControl.ping()))
     }
+
+    @Test fun pingEchoesTimestamp() {
+        val body = Proto.Writer().u64Always(1, 1234).toByteArray()
+        val req = AaControl.control(AaControl.MsgId.PING_REQUEST, body)
+        assertArrayEquals(AaControl.control(AaControl.MsgId.PING_RESPONSE, body), AaControl.pingReply(req))
+    }
+
+    @Test fun audioFocusMapping() {
+        fun state(reqType: Int): Int {
+            val req = AaControl.control(AaControl.MsgId.AUDIO_FOCUS_REQUEST, Proto.Writer().intAlways(1, reqType).toByteArray())
+            val reply = AaControl.audioFocusReply(req)
+            assertEquals(AaControl.MsgId.AUDIO_FOCUS_NOTIFICATION, AaControl.msgId(reply))
+            return Proto.varintField(reply, 1, from = 2).toInt()
+        }
+        assertEquals(1, state(1)) // gain
+        assertEquals(2, state(2)) // transient
+        assertEquals(2, state(3)) // may-duck -> transient
+        assertEquals(3, state(4)) // release -> loss
+    }
+
+    @Test fun navFocusDefaultsProjected() {
+        val reply = AaControl.navFocusReply(AaControl.control(AaControl.MsgId.NAV_FOCUS_REQUEST, ByteArray(0)))
+        assertEquals(AaControl.MsgId.NAV_FOCUS_NOTIFICATION, AaControl.msgId(reply))
+        assertEquals(2, Proto.varintField(reply, 1, from = 2).toInt()) // PROJECTED
+    }
 }
 
 class AaHandshakeTest {

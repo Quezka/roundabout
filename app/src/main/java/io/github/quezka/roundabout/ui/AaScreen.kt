@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -129,6 +130,22 @@ fun AaScreen(onBack: () -> Unit) {
 
             if (phase != AaClient.Phase.RUNNING && phase != AaClient.Phase.HANDSHAKE) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = host,
+                        onValueChange = { host = it },
+                        label = { Text(stringResource(R.string.aa_host), fontSize = 12.sp) },
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.width(220.dp).testTag("aa_host"),
+                    )
+                    OutlinedTextField(
+                        value = port,
+                        onValueChange = { port = it.filter { c -> c.isDigit() }.take(5) },
+                        label = { Text(stringResource(R.string.aa_port), fontSize = 12.sp) },
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.width(120.dp).testTag("aa_port"),
+                    )
                     FilledTonalButton(
                         onClick = {
                             val h = surfaceHolder?.surface
@@ -136,7 +153,7 @@ fun AaScreen(onBack: () -> Unit) {
                             if (h != null) client.connectWireless(host, p, h)
                         },
                         shape = RoundedCornerShape(18.dp),
-                        modifier = Modifier.height(48.dp).testTag("aa_connect"),
+                        modifier = Modifier.height(56.dp).testTag("aa_connect"),
                     ) { Text(stringResource(R.string.aa_connect), fontSize = 16.sp) }
                 }
             }

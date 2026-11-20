@@ -13,15 +13,16 @@ object AaControl {
         const val SERVICE_DISCOVERY_RESPONSE = 0x0006
         const val CHANNEL_OPEN_REQUEST = 0x0007
         const val CHANNEL_OPEN_RESPONSE = 0x0008
+        const val CHANNEL_CLOSE_NOTIFICATION = 0x0009
         const val PING_REQUEST = 0x000b
         const val PING_RESPONSE = 0x000c
         const val NAV_FOCUS_REQUEST = 0x000d
-        const val NAV_FOCUS_RESPONSE = 0x000e
-        const val SHUTDOWN_REQUEST = 0x000f
-        const val SHUTDOWN_RESPONSE = 0x0010
-        const val VOICE_SESSION_REQUEST = 0x0011
+        const val NAV_FOCUS_NOTIFICATION = 0x000e
+        const val BYEBYE_REQUEST = 0x000f
+        const val BYEBYE_RESPONSE = 0x0010
+        const val VOICE_SESSION_NOTIFICATION = 0x0011
         const val AUDIO_FOCUS_REQUEST = 0x0012
-        const val AUDIO_FOCUS_RESPONSE = 0x0013
+        const val AUDIO_FOCUS_NOTIFICATION = 0x0013
     }
 
     // AA protocol version we advertise (1.7 = broad compat)
@@ -54,5 +55,26 @@ object AaControl {
 
     fun ping(): ByteArray = byteArrayOf(0x00, MsgId.PING_REQUEST.toByte())
 
-    fun pingResponse(): ByteArray = byteArrayOf(0x00, MsgId.PING_RESPONSE.toByte())
+    // PingResponse { required int64 timestamp = 1 } ; phone expects its timestamp echoed
+    fun pingResponse(timestampNs: Long = 0L): ByteArray =
+        control(MsgId.PING_RESPONSE, Proto.Writer().u64Always(1, timestampNs).toByteArray())
+
+    fun pingReply(reqPayload: ByteArray): ByteArray = pingResponse(Proto.varintField(reqPayload, 1, from = 2))
+
+    // AudioFocusNotification { required focus_state = 1 } <- AudioFocusRequest { audio_focus_type = 1 }
+    // GAIN->GAIN TRANSIENT/DUCK->TRANSIENT RELEASE->LOSS
+    fun audioFocusReply(reqPayload: ByteArray): ByteArray {
+        val req = Proto.varintField(reqPayload, 1, from = 2).toInt()
+        val state = when (req) { 1 -> 1; 2 -> 2; 3 -> 2; 4 -> 3; else -> 0 }
+        return control(MsgId.AUDIO_FOCUS_NOTIFICATION, Proto.Writer().intAlways(1, state).toByteArray())
+    }
+
+    // NavFocusNotification { required focus_type = 1 } ; default PROJECTED
+    fun navFocusReply(reqPayload: ByteArray): ByteArray {
+        val t = Proto.varintField(reqPayload, 1, from = 2).toInt()
+        val focus = if (t == 0) 2 else t
+        return control(MsgId.NAV_FOCUS_NOTIFICATION, Proto.Writer().intAlways(1, focus).toByteArray())
+    }
+
+    fun byebyeReply(): ByteArray = control(MsgId.BYEBYE_RESPONSE, ByteArray(0))
 }

@@ -71,4 +71,16 @@ object Proto {
     fun field(tag: Int): Int = tag ushr 3
     fun wire(tag: Int): Int = tag and 7
     fun unzigzag(v: Long): Int = ((v ushr 1) xor -(v and 1)).toInt()
+
+    // first varint value of `field` in body, skipping `from` leading bytes (msgId prefix)
+    fun varintField(body: ByteArray, field: Int, from: Int = 0): Long {
+        if (body.size <= from) return 0L
+        val r = Reader(body.copyOfRange(from, body.size))
+        while (!r.eof()) {
+            val t = r.tag(); val f = Proto.field(t); val w = Proto.wire(t)
+            if (f == field && w == Wire.VARINT) return r.varint()
+            r.skip(w)
+        }
+        return 0L
+    }
 }

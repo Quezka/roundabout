@@ -23,8 +23,6 @@ private class FakeLink(input: ByteArray) : ByteLink {
 
 class AaSessionTest {
     private val versionReqFrame = byteArrayOf(0, 3, 0, 4, 0, 1, 1, 7)
-    private val pingReqFrame = byteArrayOf(0, 3, 0, 2, 0x00, 0x0b)
-    private val pongFrame = byteArrayOf(0, 3, 0, 2, 0x00, 0x0c)
 
     private fun frame(ch: Int, payload: ByteArray): ByteArray =
         AaFraming.encode(ch, payload).map { AaFraming.bytes(it) }.reduce { a, b -> a + b }
@@ -45,14 +43,17 @@ class AaSessionTest {
 
     @Test fun pingGetsPongAndServiceFrameRouted() {
         val svc = byteArrayOf(5, 3, 0, 3, 1, 2, 3) // ch5 FIRST|LAST len3 [1,2,3]
-        val link = FakeLink(pingReqFrame + svc)
+        val pingBody = Proto.Writer().u64Always(1, 1234).toByteArray()
+        val pingReq = frame(0, AaControl.control(AaControl.MsgId.PING_REQUEST, pingBody))
+        val expectedPong = frame(0, AaControl.control(AaControl.MsgId.PING_RESPONSE, pingBody))
+        val link = FakeLink(pingReq + svc)
         val routed = ArrayList<Pair<Int, ByteArray>>()
         val s = AaSession(link, { ch, p -> routed.add(ch to p) })
         s.start()
         s.pump()
         val w = link.written()
-        assertTrue(w.size >= versionReqFrame.size + pongFrame.size)
-        assertArrayEquals(pongFrame, w.copyOfRange(w.size - pongFrame.size, w.size))
+        assertTrue(w.size >= versionReqFrame.size + expectedPong.size)
+        assertArrayEquals(expectedPong, w.copyOfRange(w.size - expectedPong.size, w.size))
         assertEquals(1, routed.size)
         assertEquals(5, routed[0].first)
         assertArrayEquals(byteArrayOf(1, 2, 3), routed[0].second)

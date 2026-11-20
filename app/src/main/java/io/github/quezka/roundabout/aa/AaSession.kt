@@ -46,7 +46,10 @@ class AaSession(
     private fun onControl(payload: ByteArray) {
         val id = AaControl.msgId(payload)
         when (id) {
-            AaControl.MsgId.PING_REQUEST -> send(AaControl.CH, AaControl.pingResponse())
+            AaControl.MsgId.PING_REQUEST -> send(AaControl.CH, AaControl.pingReply(payload))
+            AaControl.MsgId.AUDIO_FOCUS_REQUEST -> send(AaControl.CH, AaControl.audioFocusReply(payload))
+            AaControl.MsgId.NAV_FOCUS_REQUEST -> send(AaControl.CH, AaControl.navFocusReply(payload))
+            AaControl.MsgId.BYEBYE_REQUEST -> { send(AaControl.CH, AaControl.byebyeReply()); stop() }
             AaControl.MsgId.AUTH_COMPLETE -> {
                 handshake.onControl(id, payload)
                 handshake.authOk(AaMessages.authStatus(payload) == AaMessages.Status.SUCCESS)
