@@ -28,3 +28,10 @@ udev: `/etc/udev/rules.d/99-intel-flash.rules` = ok (vendor `8087`)
 flash = wipe all data
 old run: `downloadTool` stop @ `Get flash id` <- killed (signal 15) ; need run until done, no timeout
 patched boot fail -> reflash stock `boot.fls` => recover
+
+## state 2026-11-20
+roundabout = rm @ tablet ; wip = branch `aa-wireless-wip`
+tablet launcher = open-headunit `4.0.0` (`com.andrerinas.headunitrevived`) ; alias `com.andrerinas.openheadunit.CarLauncherAlias` = enabled
+disabled: `launcher3` `camera2` `cellbroadcastreceiver` `musicfx` `partnerbookmarks`
+undo: `adb shell su -c "pm enable com.android.launcher3"`
+! phone often on usb too => use `adb -s PMP270262005418`
