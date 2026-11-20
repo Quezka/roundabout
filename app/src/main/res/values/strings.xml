@@ -67,6 +67,7 @@
     <string name="open_android_auto">Android Auto</string>
     <string name="phone_link_hint">Built-in wireless Android Auto receiver — no extra app needed.</string>
     <string name="aa_connect">Connect</string>
+    <string name="aa_find">Find</string>
     <string name="aa_host">Phone IP</string>
     <string name="aa_port">Port</string>
     <string name="updates">Updates</string>

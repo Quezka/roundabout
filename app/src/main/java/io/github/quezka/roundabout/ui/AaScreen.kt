@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,8 +43,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.quezka.roundabout.R
 import io.github.quezka.roundabout.aa.AaClient
+import io.github.quezka.roundabout.aa.AaDiscovery
 import io.github.quezka.roundabout.aa.AaInput
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AaScreen(onBack: () -> Unit) {
@@ -54,6 +59,8 @@ fun AaScreen(onBack: () -> Unit) {
     var host by rememberSaveable { mutableStateOf("192.168.43.1") }
     var port by rememberSaveable { mutableStateOf("5277") }
     var surfaceHolder by remember { mutableStateOf<SurfaceHolder?>(null) }
+    var finding by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val cs = MaterialTheme.colorScheme
 
     LaunchedEffect(Unit) {
@@ -155,6 +162,18 @@ fun AaScreen(onBack: () -> Unit) {
                         shape = RoundedCornerShape(18.dp),
                         modifier = Modifier.height(56.dp).testTag("aa_connect"),
                     ) { Text(stringResource(R.string.aa_connect), fontSize = 16.sp) }
+                    FilledTonalButton(
+                        onClick = {
+                            finding = true
+                            scope.launch {
+                                val ip = withContext(Dispatchers.IO) { AaDiscovery.find() }
+                                if (ip != null) host = ip
+                                finding = false
+                            }
+                        },
+                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier.height(56.dp).testTag("aa_find"),
+                    ) { Text(if (finding) "…" else stringResource(R.string.aa_find), fontSize = 16.sp) }
                 }
             }
         }
