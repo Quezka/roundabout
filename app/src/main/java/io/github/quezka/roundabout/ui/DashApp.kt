@@ -74,6 +74,7 @@ fun DashApp(vm: DashViewModel, version: String, request: Pair<Int, Screen>) {
                     DashIntent.OpenPlayer -> (media.packageName?.let { p -> apps.firstOrNull { it.packageName == p } } ?: music)
                         ?.let(vm::launch) ?: run { screen = Screen.APPS }
                     DashIntent.Light -> vm.cycleAmbient()
+                    DashIntent.OpenAa -> screen = Screen.AA
                     DashIntent.Settings -> screen = Screen.SETTINGS
                     DashIntent.GrantMedia -> vm.openNotificationAccess()
                     is DashIntent.Media -> vm.media(intent.action)

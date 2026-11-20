@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledIconButton
@@ -70,6 +72,7 @@ sealed interface DashIntent {
     data object Settings : DashIntent
     data object GrantMedia : DashIntent
     data object OpenPlayer : DashIntent
+    data object OpenAa : DashIntent
     data class Media(val action: MediaAction) : DashIntent
 }
 
@@ -120,6 +123,15 @@ private fun DriveCard(ui: DashUi, onIntent: (DashIntent) -> Unit, modifier: Modi
                 Modifier.weight(1f).fillMaxWidth().padding(vertical = 12.dp)
                     .clickable(onClickLabel = stringResource(R.string.light)) { onIntent(DashIntent.Light) },
             )
+            FilledTonalButton(
+                onClick = { onIntent(DashIntent.OpenAa) },
+                modifier = Modifier.fillMaxWidth().height(68.dp).testTag("open_aa"),
+                shape = RoundedCornerShape(34.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(containerColor = cs.surfaceContainerHigh),
+            ) {
+                Text(stringResource(R.string.aa_open), fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            }
+            Spacer(Modifier.height(12.dp))
             Button(
                 onClick = { onIntent(DashIntent.Navigate) },
                 modifier = Modifier.fillMaxWidth().height(68.dp).testTag("navigate"),

@@ -187,6 +187,11 @@ fun AaScreen(onBack: () -> Unit) {
                         shape = RoundedCornerShape(18.dp),
                         modifier = Modifier.height(56.dp).testTag("aa_find"),
                     ) { Text(if (finding) "…" else stringResource(R.string.aa_find), fontSize = 16.sp) }
+                    FilledTonalButton(
+                        onClick = { client.connectNative() },
+                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier.height(56.dp).testTag("aa_native"),
+                    ) { Text(stringResource(R.string.aa_native), fontSize = 16.sp) }
                 }
             }
         }

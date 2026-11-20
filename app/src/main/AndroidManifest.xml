@@ -24,6 +24,7 @@
     </queries>
 
     <application
+        android:name=".RoundaboutApp"
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -87,6 +88,18 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility" />
         </service>
+
+        <receiver
+            android:name=".aa.StationReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="io.github.quezka.roundabout.STATION" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".service.JanitorReceiver"
+            android:exported="false" />
 
         <receiver
             android:name=".service.BootReceiver"

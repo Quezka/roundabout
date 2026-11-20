@@ -69,6 +69,7 @@
     <string name="aa_connect">Connect</string>
     <string name="aa_disconnect">Disconnect</string>
     <string name="aa_find">Find</string>
+    <string name="aa_native">Native</string>
     <string name="aa_host">Phone IP</string>
     <string name="aa_port">Port</string>
     <string name="updates">Updates</string>
@@ -80,4 +81,5 @@
     <string name="update_installing">Installing…</string>
     <string name="update_installed">Updated to %1$s</string>
     <string name="update_failed">Failed: %1$s</string>
+    <string name="aa_open">Android Auto</string>
 </resources>

@@ -30,6 +30,8 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) request.value = 1 to screenFrom(intent)
         KeyguardService.start(this)
         RailService.start(this)
+        // keep the tablet free: sweep background processes every 15 min
+        io.github.quezka.roundabout.service.Janitor.schedule(this)
         // car dash -> screen stays on while dash shown
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.setDecorFitsSystemWindows(window, false)

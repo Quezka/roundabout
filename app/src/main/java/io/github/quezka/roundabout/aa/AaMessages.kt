@@ -29,11 +29,15 @@ object AaMessages {
 
     // advertised video geometry ; also the touch coordinate space
     object Video {
-        const val W = 1280
-        const val H = 720
-        const val RES = VideoRes.R1280x720
-        const val FPS = VideoFps.FPS_30
+        // 2.4ghz only radio : 720p costs airtime we do not have , so the native
+        // path drops to 800x480 while the wired path can still ask for more
+        @Volatile var W = 1280
+        @Volatile var H = 720
+        @Volatile var RES = VideoRes.R1280x720
+        @Volatile var FPS = VideoFps.FPS_30
         const val DPI = 160
+
+        fun use(w: Int, h: Int, res: Int = VideoRes.R800x480) { W = w; H = h; RES = res }
     }
 
     // AuthResponse { required int32 status = 1 }

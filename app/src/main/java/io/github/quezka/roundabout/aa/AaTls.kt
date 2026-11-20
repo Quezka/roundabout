@@ -8,9 +8,10 @@ import javax.net.ssl.SSLEngineResult
 // AA carries TLS *inside* control message 3 (SSL_HANDSHAKE), not on the socket.
 // the hu is the tls client ; after the handshake every frame payload is a tls
 // record with the ENCRYPTED flag set.
-class AaTls(ssl: SSLContext, host: String, port: Int = 5277, private val log: (String) -> Unit = {}) {
+class AaTls(ssl: SSLContext, host: String, port: Int = 5277, private val log: (String) -> Unit = {}, serverMode: Boolean = false) {
     private val engine: SSLEngine = ssl.createSSLEngine(host, port).apply {
-        useClientMode = true
+        useClientMode = !serverMode
+        needClientAuth = serverMode
         beginHandshake()
     }
     private var netOut = ByteBuffer.allocate(engine.session.packetBufferSize * 2 + 256)
@@ -42,7 +43,7 @@ class AaTls(ssl: SSLContext, host: String, port: Int = 5277, private val log: (S
         return out
     }
 
-    // first flight (client hello)
+    // first flight (client hello) ; a server produces nothing until the peer talks
     fun begin(): ByteArray {
         var st = engine.handshakeStatus
         if (st == SSLEngineResult.HandshakeStatus.NEED_WRAP) {
