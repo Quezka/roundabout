@@ -21,13 +21,15 @@ class AaClient(private val ctx: Context) {
     private var video: AvChannel? = null
     private var audio: AvChannel? = null
     private var sensors: SensorChannel? = null
+    private var tablet: TabletSensors? = null
+    @Volatile private var lastNight: Boolean? = null
     @Volatile private var inputOpen = false
     @Volatile private var night = true
     @Volatile private var surface: Surface? = null
 
     private fun set(p: Phase, d: String) { phase = p; detail = d }
 
-    fun connectWireless(host: String, port: Int, surface: Surface, w: Int = 800, h: Int = 480, night: Boolean = true) {
+    fun connectWireless(host: String, port: Int, surface: Surface, w: Int = AaMessages.Video.W, h: Int = AaMessages.Video.H, night: Boolean = true) {
         disconnect()
         this.surface = surface
         this.night = night
@@ -44,7 +46,7 @@ class AaClient(private val ctx: Context) {
                     onState = { st ->
                         when (st) {
                             AaHandshake.State.FAILED -> set(Phase.FAILED, "handshake failed")
-                            AaHandshake.State.RUNNING -> set(Phase.RUNNING, "projecting")
+                            AaHandshake.State.RUNNING -> { set(Phase.RUNNING, "projecting"); startTablet() }
                             else -> set(Phase.HANDSHAKE, st.name)
                         }
                     },
@@ -110,6 +112,47 @@ class AaClient(private val ctx: Context) {
         }
     }
 
+    // gps + light sensor of the tablet feed the sensor channel (no vehicle bus)
+    private fun startTablet() {
+        if (tablet != null) return
+        tablet = TabletSensors(
+            ctx,
+            onFix = { fix ->
+                val s = session
+                if (s != null && s.openChannels.contains(AaMessages.Ch.SENSOR)) {
+                    val kmh = if (fix.hasSpeed) (fix.speedMps * 3.6f).toInt() else null
+                    s.sendOn(
+                        AaMessages.Ch.SENSOR,
+                        AaAv.message(
+                            AaSensors.Msg.BATCH,
+                            AaSensors.locationBatch(
+                                latE7 = fix.latE7,
+                                lonE7 = fix.lonE7,
+                                accuracyM = fix.accuracyM,
+                                altitudeM = fix.altitudeM,
+                                speedMps = fix.speedMps,
+                                bearingDeg = fix.bearingDeg,
+                                speedKmh = kmh,
+                            ),
+                        ),
+                    )
+                }
+            },
+            onNight = { n ->
+                if (lastNight != n) {
+                    lastNight = n
+                    sensors?.setNight(n)
+                }
+            },
+        ).also { it.start() }
+    }
+
+    private fun stopTablet() {
+        tablet?.stop()
+        tablet = null
+        lastNight = null
+    }
+
     // call from the ui thread ; coordinates in 800x480 video space
     fun touch(x: Int, y: Int, action: Int) {
         if (!inputOpen) return
@@ -118,6 +161,7 @@ class AaClient(private val ctx: Context) {
 
     fun disconnect() {
         try { session?.stop() } catch (e: Exception) { }
+        stopTablet()
         session = null
         videoSink?.release(); videoSink = null
         audioSink?.release(); audioSink = null

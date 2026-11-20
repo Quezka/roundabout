@@ -38,6 +38,27 @@ object AaSensors {
     // SensorBatch { repeated SpeedData speed_data = 3 { int32 speed_e3 = 1 } }
     fun speedBatch(kmh: Double): ByteArray =
         Proto.Writer().message(3, Proto.Writer().intAlways(1, (kmh * 1000).toInt()).toByteArray()).toByteArray()
+
+    // SensorBatch { location_data = 1 { latitude_e7=2 longitude_e7=3 accuracy_e3=4
+    //               altitude_e2=5 speed_e3=6 bearing_e6=7 } + optional speed_data = 3 }
+    fun locationBatch(
+        latE7: Int,
+        lonE7: Int,
+        accuracyM: Float = 0f,
+        altitudeM: Double = 0.0,
+        speedMps: Float = 0f,
+        bearingDeg: Float = 0f,
+        speedKmh: Int? = null,
+    ): ByteArray {
+        val loc = Proto.Writer().intAlways(2, latE7).intAlways(3, lonE7)
+        if (accuracyM > 0f) loc.int(4, (accuracyM * 1000f).toInt())
+        loc.int(5, (altitudeM * 100.0).toInt())
+        if (speedMps > 0f) loc.int(6, (speedMps * 1000f).toInt())
+        if (bearingDeg > 0f) loc.int(7, (bearingDeg * 1_000_000f).toInt())
+        val w = Proto.Writer().message(1, loc.toByteArray())
+        if (speedKmh != null) w.message(3, Proto.Writer().intAlways(1, speedKmh * 1000).toByteArray())
+        return w.toByteArray()
+    }
 }
 
 // answers sensor requests and pushes the values the phone needs

@@ -7,19 +7,28 @@ import android.view.Surface
 // H.264 (video/avc) decoder ; renders into a Surface (TextureView/SurfaceView)
 class VideoSink(
     private val surface: Surface,
-    private val width: Int = 800,
-    private val height: Int = 480,
+    private val width: Int = AaMessages.Video.W,
+    private val height: Int = AaMessages.Video.H,
 ) : AvSink {
     private var codec: MediaCodec? = null
     private val info = MediaCodec.BufferInfo()
 
     private fun ensure() {
         if (codec != null) return
-        val fmt = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
+        codec = try {
+            open(width, height)
+        } catch (e: Exception) {
+            // soc may refuse 720p ; fall back to the smallest advertised profile
+            try { open(800, 480) } catch (e2: Exception) { null }
+        }
+    }
+
+    private fun open(w: Int, h: Int): MediaCodec {
+        val fmt = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, w, h)
         val c = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
         c.configure(fmt, surface, null, 0)
         c.start()
-        codec = c
+        return c
     }
 
     override fun onCodecConfig(bytes: ByteArray) {

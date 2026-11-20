@@ -23,6 +23,14 @@ object AaMessages {
     object Sensor { const val LOCATION = 1; const val SPEED = 3; const val NIGHT_MODE = 10; const val DRIVING_STATUS = 13 }
     object Status { const val SUCCESS = 0 }
 
+    // advertised video geometry ; also the touch coordinate space
+    object Video {
+        const val W = 1280
+        const val H = 720
+        const val RES = VideoRes.R1280x720
+        const val FPS = VideoFps.FPS_30
+    }
+
     // AuthResponse { required int32 status = 1 }
     fun authStatus(payload: ByteArray): Int {
         val r = Proto.Reader(payload)
@@ -89,8 +97,8 @@ object AaMessages {
             w.intAlways(1, Codec.VIDEO_H264_BP)
             // VideoConfiguration { codec_resolution=1 frame_rate=2 video_codec_type=10 }
             val vc = Proto.Writer()
-                .int(1, VideoRes.R800x480)
-                .int(2, VideoFps.FPS_30)
+                .int(1, Video.RES)
+                .int(2, Video.FPS)
                 .int(10, Codec.VIDEO_H264_BP)
                 .toByteArray()
             w.message(4, vc)
@@ -112,8 +120,8 @@ object AaMessages {
     // InputSourceService { TouchScreen touchscreen = 2 { width=1 height=2 type=3 } }
     private fun inputSource(): ByteArray {
         val ts = Proto.Writer()
-            .intAlways(1, 800)
-            .intAlways(2, 480)
+            .intAlways(1, Video.W)
+            .intAlways(2, Video.H)
             .int(3, Touch.CAPACITIVE)
             .toByteArray()
         return Proto.Writer().message(2, ts).toByteArray()

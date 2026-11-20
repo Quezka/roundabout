@@ -46,6 +46,7 @@ import io.github.quezka.roundabout.R
 import io.github.quezka.roundabout.aa.AaClient
 import io.github.quezka.roundabout.aa.AaDiscovery
 import io.github.quezka.roundabout.aa.AaInput
+import io.github.quezka.roundabout.aa.AaMessages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -95,10 +96,10 @@ fun AaScreen(onBack: () -> Unit) {
                             val ev = awaitPointerEvent()
                             val ch = ev.changes.firstOrNull() ?: continue
                             if (!ch.pressed && !ch.previousPressed) continue
-                            val sx = 800f / size.width
-                            val sy = 480f / size.height
-                            val x = (ch.position.x * sx).toInt().coerceIn(0, 799)
-                            val y = (ch.position.y * sy).toInt().coerceIn(0, 479)
+                            val sx = AaMessages.Video.W / size.width
+                            val sy = AaMessages.Video.H / size.height
+                            val x = (ch.position.x * sx).toInt().coerceIn(0, AaMessages.Video.W - 1)
+                            val y = (ch.position.y * sy).toInt().coerceIn(0, AaMessages.Video.H - 1)
                             val action = when {
                                 ch.pressed && !ch.previousPressed -> AaInput.Action.DOWN
                                 !ch.pressed && ch.previousPressed -> AaInput.Action.UP
