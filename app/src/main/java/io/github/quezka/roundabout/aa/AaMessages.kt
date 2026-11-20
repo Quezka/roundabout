@@ -73,13 +73,13 @@ object AaMessages {
         w.message(1, mediaAudioChannel())
         w.message(1, inputChannel())
         w.message(1, sensorChannel())
-        w.string(2, displayName)          // head_unit_name
+        w.string(2, "Desktop Head Unit")   // head_unit_name ; dhu identity skips app checks
         w.string(3, "Universal")          // car_model
         w.string(4, "2026")               // car_year
         w.string(5, "RB-01")              // car_serial
         w.boolAlways(6, true)             // left_hand_drive_vehicle
-        w.string(7, "quezka")             // headunit_manufacturer
-        w.string(8, "Roundabout")         // headunit_model
+        w.string(7, "Google")             // headunit_manufacturer ; dhu identity
+        w.string(8, "Desktop Head Unit")  // headunit_model ; dhu identity
         w.string(9, "1")                  // sw_build
         w.string(10, "1.0")               // sw_version
         w.boolAlways(11, false)           // can_play_native_media_during_vr

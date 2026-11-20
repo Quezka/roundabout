@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) request.value = 1 to screenFrom(intent)
         KeyguardService.start(this)
         RailService.start(this)
         // car dash -> screen stays on while dash shown
@@ -49,14 +50,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val target = when (intent.getStringExtra(RailService.EXTRA_SCREEN)) {
+        request.value = (request.value.first + 1) to screenFrom(intent)
+    }
+
+    private fun screenFrom(intent: Intent?): Screen =
+        when (intent?.getStringExtra(RailService.EXTRA_SCREEN)) {
             RailService.SCREEN_APPS -> Screen.APPS
             RailService.SCREEN_CLIPS -> Screen.CLIPS
             RailService.SCREEN_AA -> Screen.AA
             else -> Screen.DASH
         }
-        request.value = (request.value.first + 1) to target
-    }
 
     override fun onResume() {
         super.onResume()
