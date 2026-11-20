@@ -58,8 +58,9 @@ fun AaScreen(onBack: () -> Unit) {
     val client = remember { AaClient(ctx.applicationContext) }
     var phase by remember { mutableStateOf(client.phase) }
     var detail by remember { mutableStateOf(client.detail) }
-    var host by rememberSaveable { mutableStateOf("192.168.43.1") }
-    var port by rememberSaveable { mutableStateOf("5277") }
+    val prefs = remember { ctx.getSharedPreferences("aa", android.content.Context.MODE_PRIVATE) }
+    var host by rememberSaveable { mutableStateOf(prefs.getString("host", "192.168.43.1") ?: "192.168.43.1") }
+    var port by rememberSaveable { mutableStateOf(prefs.getString("port", "5277") ?: "5277") }
     var surfaceHolder by remember { mutableStateOf<SurfaceHolder?>(null) }
     var finding by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -133,6 +134,14 @@ fun AaScreen(onBack: () -> Unit) {
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp).testTag("aa_status"),
                     )
                 }
+                if (phase == AaClient.Phase.RUNNING || phase == AaClient.Phase.HANDSHAKE) {
+                    Spacer(Modifier.width(10.dp))
+                    FilledTonalButton(
+                        onClick = { client.disconnect() },
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.height(40.dp).testTag("aa_disconnect"),
+                    ) { Text(stringResource(R.string.aa_disconnect), fontSize = 14.sp) }
+                }
             }
 
             Spacer(Modifier.height(10.dp))
@@ -160,6 +169,7 @@ fun AaScreen(onBack: () -> Unit) {
                             val h = surfaceHolder?.surface
                             val p = port.toIntOrNull() ?: 5277
                             val dark = cs.background.luminance() < 0.5f
+                            prefs.edit().putString("host", host).putString("port", port).apply()
                             if (h != null) client.connectWireless(host, p, h, night = dark)
                         },
                         shape = RoundedCornerShape(18.dp),

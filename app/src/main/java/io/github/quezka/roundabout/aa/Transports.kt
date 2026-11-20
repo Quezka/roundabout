@@ -20,8 +20,10 @@ class TcpTlsLink(
     fun connect() {
         val raw = Socket()
         raw.connect(InetSocketAddress(host, port), 10_000)
+        raw.soTimeout = 30_000 // bound a stuck tls handshake + dead reads
         val s = ssl.socketFactory.createSocket(raw, host, port, true) as SSLSocket
         s.useClientMode = true
+        s.soTimeout = 30_000
         s.startHandshake()
         socket = s
     }

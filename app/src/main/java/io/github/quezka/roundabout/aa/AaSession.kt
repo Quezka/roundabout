@@ -28,7 +28,13 @@ class AaSession(
     fun pump() {
         val buf = ByteArray(0x4000)
         while (run) {
-            val n = try { link.read(buf) } catch (e: Exception) { -1 }
+            val n = try {
+                link.read(buf)
+            } catch (e: java.net.SocketTimeoutException) {
+                continue // idle link ; keep the session alive
+            } catch (e: Exception) {
+                -1
+            }
             if (n <= 0) break
             for (f in parser.feed(buf, 0, n)) handle(f)
         }
