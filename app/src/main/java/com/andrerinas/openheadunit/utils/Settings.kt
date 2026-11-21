@@ -2659,7 +2659,7 @@ class Settings(private val context: Context) {
 
     var appTheme: AppTheme
         get() {
-            val value = prefs.getInt("app-theme", 0)
+            val value = prefs.getInt("app-theme", AppTheme.DARK.value) // roundabout = dark default
             return AppTheme.fromInt(value) ?: AppTheme.AUTOMATIC
         }
         set(theme) {

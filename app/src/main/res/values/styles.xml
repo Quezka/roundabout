@@ -28,6 +28,10 @@
         <item name="settingsOnSecondaryContainer">@color/md_on_secondary_container</item>
         <item name="settingsOutlinedGroups">false</item>
         <item name="settingsFilledIcons">true</item>
+        <!-- roundabout look: manrope everywhere -->
+        <item name="fontFamily">@font/manrope</item>
+        <item name="android:fontFamily">@font/manrope</item>
+        <item name="colorOnPrimary">#121212</item>
     </style>
 
     <style name="AppTheme.Translucent" parent="android:Theme.Translucent.NoTitleBar" />
@@ -47,10 +51,12 @@
     </style>
 
     <style name="DarkAlertDialog" parent="Theme.Material3.DayNight.Dialog.Alert">
+        <item name="fontFamily">@font/manrope</item>
+        <item name="android:fontFamily">@font/manrope</item>
         <item name="colorPrimary">@color/brand_primary</item>
-        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorOnPrimary">#121212</item>
         <item name="colorSecondary">@color/brand_primary</item>
-        <item name="colorOnSecondary">@android:color/white</item>
+        <item name="colorOnSecondary">#121212</item>
         <item name="android:colorAccent">@color/brand_primary</item>
         <item name="android:background">?attr/colorSurface</item>
         <item name="android:textColorPrimary">@color/adaptive_text_color</item>
@@ -61,7 +67,7 @@
     </style>
 
     <style name="DialogButton.Positive" parent="Widget.Material3.Button">
-        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColor">#121212</item>
         <item name="backgroundTint">@color/brand_primary</item>
         <item name="android:backgroundTint">@color/brand_primary</item>
         <item name="android:background">@drawable/btn_primary</item>
@@ -166,7 +172,7 @@
     </style>
     <style name="ShapeAppearanceOverlay.App.Dialog.Rounded" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">24dp</item>
+        <item name="cornerSize">32dp</item>
     </style>
 
     <!-- Home screen tiles: the driver bar and the favorite apps share one look. -->

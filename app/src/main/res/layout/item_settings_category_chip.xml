@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="@font/manrope_semibold"
         android:maxLines="1"
         android:textSize="14sp"
         tools:text="General" />
