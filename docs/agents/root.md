@@ -31,7 +31,9 @@ patched boot fail -> reflash stock `boot.fls` => recover
 
 ## state 2026-11-20
 roundabout = rm @ tablet ; wip = branch `aa-wireless-wip`
-tablet launcher = open-headunit `4.0.0` (`com.andrerinas.headunitrevived`) ; alias `com.andrerinas.openheadunit.CarLauncherAlias` = enabled
+tablet launcher = roundabout-on-oh (`io.github.quezka.roundabout`, branch `open-headunit`, worktree `../roundabout-oh`) ; alias `com.andrerinas.openheadunit.CarLauncherAlias` = enabled
+old oh `com.andrerinas.headunitrevived` = rm 2026-11-21 ; prefs + `device_policies.xml` bak @ tablet `/data/local/tmp/ohbak/`
+! device admin moved by hand: `/data/system/device_policies.xml` -> new pkg
 disabled: `launcher3` `camera2` `cellbroadcastreceiver` `musicfx` `partnerbookmarks`
 undo: `adb shell su -c "pm enable com.android.launcher3"`
 ! phone often on usb too => use `adb -s PMP270262005418`
