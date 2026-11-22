@@ -75,7 +75,7 @@ class SettingsRestoreHandlerTest {
         val changes = mapOf<String, Any>(
             "app-language" to "ru",
             "ui-scale-settings-percent" to 125,
-            "app-theme" to Settings.AppTheme.DARK.value,
+            "app-theme" to Settings.AppTheme.CLEAR.value, // != default (dark @ roundabout)
             "use-extreme-dark-mode" to true,
             "use-gradient-background" to !settings.useGradientBackground,
             Settings.KEY_SCREEN_ORIENTATION to 1,

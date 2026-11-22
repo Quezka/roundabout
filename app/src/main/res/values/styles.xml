@@ -121,10 +121,11 @@
         <item name="android:maxLines">2</item>
         <item name="android:minHeight">@dimen/settings_segment_min_height</item>
         <item name="android:minWidth">0dp</item>
-        <item name="android:paddingLeft">6dp</item>
-        <item name="android:paddingRight">6dp</item>
+        <item name="android:paddingLeft">3dp</item>
+        <item name="android:paddingRight">3dp</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:textSize">@dimen/settings_control_text_size</item>
+        <!-- manrope wider than roboto -> less padding so 'Gemeinsames WLAN' fits @ 360dp -->
     </style>
 
     <!-- Header controls of the settings screen (tabs, search, save). Colors set in code. -->
