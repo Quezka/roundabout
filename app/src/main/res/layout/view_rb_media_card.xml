@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- roundabout media card: player + title / artist + prev / play-pause / next -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rb_media_card"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:background="@drawable/rb_media_bg"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/rb_media_player"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/rb_icon_tile"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/rb_media_app_icon"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/rb_ic_note"
+                app:tint="@color/rb_accent" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="18dp"
+            android:layout_marginStart="18dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/manrope_bold"
+                android:text="@string/rb_now_playing"
+                android:textColor="@color/rb_accent"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/rb_media_app"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/rb_muted"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="18dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rb_media_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/manrope_bold"
+            android:lineSpacingExtra="4sp"
+            android:maxLines="3"
+            android:text="@string/rb_nothing_playing"
+            android:textColor="@color/rb_text"
+            android:textSize="26sp" />
+
+        <TextView
+            android:id="@+id/rb_media_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/manrope_medium"
+            android:maxLines="1"
+            android:textColor="@color/rb_muted"
+            android:textSize="20sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/rb_media_grant"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rb_btn_grant"
+            android:clickable="true"
+            android:focusable="true"
+            android:fontFamily="@font/manrope_bold"
+            android:gravity="center"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:text="@string/rb_grant_access"
+            android:textColor="@color/rb_on_accent"
+            android:textSize="18sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/rb_media_prev"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/rb_btn_tonal"
+            android:clickable="true"
+            android:contentDescription="@string/rb_media_prev"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/rb_ic_prev"
+                app:tint="@color/rb_text" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/rb_media_toggle"
+            android:layout_width="0dp"
+            android:layout_height="84dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginRight="14dp"
+            android:layout_weight="1"
+            android:background="@drawable/rb_btn_primary"
+            android:clickable="true"
+            android:contentDescription="@string/rb_media_play"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/rb_media_toggle_icon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/rb_ic_play"
+                app:tint="@color/rb_on_accent" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/rb_media_next"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/rb_btn_tonal"
+            android:clickable="true"
+            android:contentDescription="@string/rb_media_next"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/rb_ic_next"
+                app:tint="@color/rb_text" />
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

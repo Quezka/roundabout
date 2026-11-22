@@ -1897,4 +1897,19 @@ Open Headunit предоставляется «как есть» без каки
     <string name="home_hotspot_not_found">Wi‑Fi не подключён. Включена ли точка доступа телефона?</string>
     <string name="home_wifi_hotspot_hint">Включена ли точка доступа телефона?</string>
     <string name="home_wifi_off_hint">Включите для подключения</string>
+    <!-- roundabout cards -->
+    <string name="rb_greeting_morning">Доброе утро</string>
+    <string name="rb_greeting_afternoon">Добрый день</string>
+    <string name="rb_greeting_evening">Добрый вечер</string>
+    <string name="rb_greeting_night">Осторожно на дороге</string>
+    <string name="rb_speed_unit">км/ч</string>
+    <string name="rb_now_playing">Сейчас играет</string>
+    <string name="rb_nothing_playing">Ничего не играет</string>
+    <string name="rb_unknown_artist">Неизвестный исполнитель</string>
+    <string name="rb_media_access_needed">Разрешите доступ к уведомлениям, чтобы видеть, что играет</string>
+    <string name="rb_grant_access">Разрешить доступ</string>
+    <string name="rb_media_prev">Предыдущий</string>
+    <string name="rb_media_next">Следующий</string>
+    <string name="rb_media_play">Играть</string>
+    <string name="rb_media_pause">Пауза</string>
 </resources>

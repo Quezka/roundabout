@@ -150,6 +150,7 @@ class HomeFragment : Fragment() {
     private var homeInfoTicker: Job? = null
     private var gpsListener: LocationListener? = null
     private var gpsSpeedKmh: Int? = null
+    private var rbCards: com.andrerinas.openheadunit.roundabout.RoundaboutCards? = null
     /** The launcher home on a small screen, where the main button's card gives way to the rest. */
     private var compactHome = false
     /** The launcher home on a very wide unit, where the favorites sit beside the card. */
@@ -261,6 +262,7 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        rbCards = com.andrerinas.openheadunit.roundabout.RoundaboutCards(view)
         renderHome()
 
         activity?.findViewById<View>(R.id.status_notices)?.let { notices ->
@@ -662,6 +664,7 @@ class HomeFragment : Fragment() {
     private fun renderHomeInfo() {
         val ctx = context ?: return
         val root = view ?: return
+        rbCards?.renderInfo(dateText(), gpsSpeedKmh)
         HomeUiHelper.applyInfoBlock(
             rootView = root,
             settings = App.provide(ctx).settings,
@@ -687,8 +690,10 @@ class HomeFragment : Fragment() {
         homeInfoTicker = null
         stopSpeedUpdates()
         gpsSpeedKmh = null
-        if (!appSettings.showHomeClock && !appSettings.showHomeSpeed) return
-        if (appSettings.showHomeSpeed) {
+        // roundabout drive card = greeting + date + gauge => clock + speed always on
+        val cards = rbCards?.present == true
+        if (!cards && !appSettings.showHomeClock && !appSettings.showHomeSpeed) return
+        if (cards || appSettings.showHomeSpeed) {
             // Whatever the unit already knows, so the readout is not blank while the chip locks.
             gpsSpeedKmh = LocationHolder.currentGpsFix(requireContext(), SPEED_MAX_AGE_MS)
                 ?.takeIf { it.hasSpeed() }
@@ -696,7 +701,7 @@ class HomeFragment : Fragment() {
             startSpeedUpdates()
         }
         renderHomeInfo()
-        if (appSettings.showHomeClock) {
+        if (cards || appSettings.showHomeClock) {
             homeInfoTicker = viewLifecycleOwner.lifecycleScope.launch {
                 while (isActive) {
                     val now = System.currentTimeMillis()
@@ -930,7 +935,9 @@ class HomeFragment : Fragment() {
      * before the widget row and the main button are filled in.
      */
     private fun applyHomeLayout(root: View, appSettings: Settings, isLauncherActive: Boolean) {
-        val card = root.findViewById<View>(R.id.home_primary_card) ?: return
+        // roundabout: cards row stands in for the main button here
+        val card = root.findViewById<View>(R.id.rb_cards_row)
+            ?: root.findViewById<View>(R.id.home_primary_card) ?: return
         val area = root.findViewById<View>(R.id.home_favorites_area) ?: return
         val main = root.findViewById<LinearLayout>(R.id.home_page_main) ?: return
         val config = resources.configuration
@@ -2207,6 +2214,7 @@ class HomeFragment : Fragment() {
         updateLauncherViews()
         renderHome()
         startHomeInfo()
+        rbCards?.start()
         showUsbAccessHintIfNeeded()
 
         val appSettings = App.provide(requireContext()).settings
@@ -2488,6 +2496,8 @@ class HomeFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        rbCards?.stop()
+        rbCards = null
         super.onDestroyView()
         noticesLayoutListener?.let { activity?.findViewById<View>(R.id.status_notices)?.removeOnLayoutChangeListener(it) }
         noticesLayoutListener = null
@@ -2515,6 +2525,7 @@ class HomeFragment : Fragment() {
         driverCountdownTimer?.cancel()
         driverCountdownTimer = null
         stopHomeInfo()
+        rbCards?.stop()
         activeDialog?.dismiss()
         activeDialog = null
         actionDialog?.dismiss()

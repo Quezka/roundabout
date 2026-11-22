@@ -149,7 +149,28 @@
                 android:divider="@drawable/home_gap"
                 android:showDividers="middle">
 
-                <include layout="@layout/view_home_primary_card" />
+                <!-- roundabout: drive | connection | media cards, favorites under them -->
+                <LinearLayout
+                    android:id="@+id/rb_cards_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    android:divider="@drawable/home_gap"
+                    android:showDividers="middle">
+
+                    <include layout="@layout/view_rb_drive_card" />
+
+                    <include
+                        layout="@layout/view_home_primary_card"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                    <include layout="@layout/view_rb_media_card" />
+
+                </LinearLayout>
 
                 <include layout="@layout/view_home_favorites" />
 

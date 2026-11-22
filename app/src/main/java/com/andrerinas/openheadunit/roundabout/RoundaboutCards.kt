@@ -1,0 +1,119 @@
+package com.andrerinas.openheadunit.roundabout
+
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.content.res.ColorStateList
+import android.os.Build
+import android.provider.Settings
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
+import com.andrerinas.openheadunit.R
+import java.util.Calendar
+
+// roundabout drive card (greeting + date + gauge) + media card @ home main page
+// no cards in layout (portrait) -> every call = no-op
+class RoundaboutCards(private val root: View) {
+    private val ctx = root.context
+    private val drive: View? = root.findViewById(R.id.rb_drive_card)
+    private val media: View? = root.findViewById(R.id.rb_media_card)
+    private val gauge: SpeedGaugeView? = root.findViewById(R.id.rb_gauge)
+    private val watcher = MediaWatcher(ctx) { renderMedia(it) }
+    private var state = MediaState.NONE
+
+    val present: Boolean get() = drive != null || media != null
+
+    init {
+        gauge?.unit = ctx.getString(R.string.rb_speed_unit)
+        media?.let { m ->
+            m.findViewById<View>(R.id.rb_media_prev)?.setOnClickListener { watcher.send(MediaAction.PREVIOUS) }
+            m.findViewById<View>(R.id.rb_media_toggle)?.setOnClickListener { watcher.send(MediaAction.TOGGLE) }
+            m.findViewById<View>(R.id.rb_media_next)?.setOnClickListener { watcher.send(MediaAction.NEXT) }
+            m.findViewById<View>(R.id.rb_media_grant)?.setOnClickListener { openListenerSettings() }
+            m.findViewById<View>(R.id.rb_media_player)?.setOnClickListener { openPlayer() }
+        }
+    }
+
+    fun start() {
+        if (media == null) return
+        watcher.start()
+        renderMedia(state)
+    }
+
+    fun stop() = watcher.stop()
+
+    fun renderInfo(date: String, speedKmh: Int?) {
+        drive ?: return
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val greeting = when (hour) {
+            in 5..11 -> R.string.rb_greeting_morning
+            in 12..17 -> R.string.rb_greeting_afternoon
+            in 18..22 -> R.string.rb_greeting_evening
+            else -> R.string.rb_greeting_night
+        }
+        drive.findViewById<TextView>(R.id.rb_greeting)?.setText(greeting)
+        drive.findViewById<TextView>(R.id.rb_date)?.text = date
+        gauge?.setSpeed(speedKmh)
+    }
+
+    private fun renderMedia(s: MediaState) {
+        state = s
+        val m = media ?: return
+        val access = watcher.hasAccess()
+        val title = m.findViewById<TextView>(R.id.rb_media_title)
+        val artist = m.findViewById<TextView>(R.id.rb_media_artist)
+        val grant = m.findViewById<View>(R.id.rb_media_grant)
+        grant?.visibility = if (access || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) View.GONE else View.VISIBLE
+        when {
+            !access && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP -> {
+                title?.setText(R.string.rb_media_access_needed)
+                artist?.visibility = View.GONE
+            }
+            s.hasMedia -> {
+                title?.text = s.title
+                artist?.visibility = View.VISIBLE
+                artist?.text = s.artist ?: ctx.getString(R.string.rb_unknown_artist)
+            }
+            else -> {
+                title?.setText(R.string.rb_nothing_playing)
+                artist?.visibility = View.GONE
+            }
+        }
+        m.findViewById<ImageView>(R.id.rb_media_toggle_icon)
+            ?.setImageResource(if (s.playing) R.drawable.rb_ic_pause else R.drawable.rb_ic_play)
+        m.findViewById<View>(R.id.rb_media_toggle)?.contentDescription =
+            ctx.getString(if (s.playing) R.string.rb_media_pause else R.string.rb_media_play)
+
+        val icon = m.findViewById<ImageView>(R.id.rb_media_app_icon)
+        val label = m.findViewById<TextView>(R.id.rb_media_app)
+        val pkg = s.packageName
+        val info = pkg?.let { try { ctx.packageManager.getApplicationInfo(it, 0) } catch (e: Exception) { null } }
+        if (info != null) {
+            icon?.setImageDrawable(ctx.packageManager.getApplicationIcon(info))
+            icon?.let { ImageViewCompat.setImageTintList(it, null) }
+            label?.text = ctx.packageManager.getApplicationLabel(info)
+        } else {
+            icon?.setImageResource(R.drawable.rb_ic_note)
+            icon?.let { ImageViewCompat.setImageTintList(it, ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.rb_accent))) }
+            label?.text = ""
+        }
+    }
+
+    private fun openPlayer() {
+        val pkg = state.packageName ?: return
+        val intent = ctx.packageManager.getLaunchIntentForPackage(pkg) ?: return
+        try { ctx.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { }
+    }
+
+    private fun openListenerSettings() {
+        try {
+            ctx.startActivity(
+                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        } catch (e: ActivityNotFoundException) {
+            ctx.startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+    }
+}

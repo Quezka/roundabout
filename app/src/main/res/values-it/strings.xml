@@ -1900,4 +1900,18 @@
     <string name="home_hotspot_not_found">Nessun WiFi connesso. L’hotspot del telefono è attivo?</string>
     <string name="home_wifi_hotspot_hint">L’hotspot del telefono è attivo?</string>
     <string name="home_wifi_off_hint">Accendilo per connetterti</string>
+    <!-- roundabout cards -->
+    <string name="rb_greeting_morning">Buongiorno</string>
+    <string name="rb_greeting_afternoon">Buon pomeriggio</string>
+    <string name="rb_greeting_evening">Buonasera</string>
+    <string name="rb_greeting_night">Guida con prudenza</string>
+    <string name="rb_now_playing">In riproduzione</string>
+    <string name="rb_nothing_playing">Niente in riproduzione</string>
+    <string name="rb_unknown_artist">Artista sconosciuto</string>
+    <string name="rb_media_access_needed">Consenti l\'accesso alle notifiche per vedere cosa suona</string>
+    <string name="rb_grant_access">Consenti l\'accesso</string>
+    <string name="rb_media_prev">Precedente</string>
+    <string name="rb_media_next">Successivo</string>
+    <string name="rb_media_play">Riproduci</string>
+    <string name="rb_media_pause">Pausa</string>
 </resources>

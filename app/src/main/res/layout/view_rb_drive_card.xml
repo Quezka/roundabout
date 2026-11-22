@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- roundabout drive card: greeting + date + round speed gauge -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rb_drive_card"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:background="@drawable/rb_card_bg"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/rb_greeting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:fontFamily="@font/manrope_bold"
+        android:maxLines="1"
+        android:textColor="@color/rb_text"
+        android:textSize="26sp" />
+
+    <TextView
+        android:id="@+id/rb_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:fontFamily="@font/manrope_medium"
+        android:maxLines="1"
+        android:textColor="@color/rb_muted"
+        android:textSize="18sp" />
+
+    <com.andrerinas.openheadunit.roundabout.SpeedGaugeView
+        android:id="@+id/rb_gauge"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="12dp" />
+
+</LinearLayout>
