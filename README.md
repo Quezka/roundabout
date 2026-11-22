@@ -1,3 +1,9 @@
+> **Roundabout edition.** This branch is Roundabout (powered by Open Headunit): Open Headunit
+> with Roundabout's look (dark surfaces, orange accent, Manrope) and home screen (a drive card
+> with a round speed gauge, the connection card, and a now-playing media card). App id
+> `io.github.quezka.roundabout`, so it installs next to upstream. The media card needs
+> notification access. Everything else is upstream Open Headunit, under its AGPL-3.0 licence.
+
 # Open Headunit
 
 <a href='https://play.google.com/store/apps/details?id=com.andrerinas.headunitrevived'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200"/></a>

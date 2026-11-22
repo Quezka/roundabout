@@ -1,4 +1,5 @@
 <resources>
+    <!-- roundabout: main card sized like roundabout buttons <- shares height w/ drive card -->
     <!-- Larger home elements for head units, which are both tall and wide. A portrait phone
          (320x533dp) used to take these values on height alone and then clip the main button's
          action, so the width qualifier keeps them for real head units. -->
@@ -8,21 +9,21 @@
     <dimen name="home_tile_size">96dp</dimen>
     <dimen name="home_tile_icon">34dp</dimen>
     <dimen name="home_tile_label">16sp</dimen>
-    <dimen name="home_card_padding_h">40dp</dimen>
-    <dimen name="home_card_padding_v">32dp</dimen>
-    <dimen name="home_card_icon_tile">88dp</dimen>
-    <dimen name="home_card_icon">48dp</dimen>
-    <dimen name="home_card_kicker">20sp</dimen>
-    <dimen name="home_card_title">44sp</dimen>
-    <dimen name="home_card_subtitle">22sp</dimen>
-    <dimen name="home_cta_height">104dp</dimen>
-    <dimen name="home_cta_min_width">400dp</dimen>
+    <dimen name="home_card_padding_h">24dp</dimen>
+    <dimen name="home_card_padding_v">20dp</dimen>
+    <dimen name="home_card_icon_tile">56dp</dimen>
+    <dimen name="home_card_icon">30dp</dimen>
+    <dimen name="home_card_kicker">15sp</dimen>
+    <dimen name="home_card_title">30sp</dimen>
+    <dimen name="home_card_subtitle">18sp</dimen>
+    <dimen name="home_cta_height">68dp</dimen>
+    <dimen name="home_cta_min_width">200dp</dimen>
     <dimen name="home_progress_shine_width">72dp</dimen>
-    <dimen name="home_cta_text">32sp</dimen>
-    <dimen name="home_secondary_cta_height">64dp</dimen>
-    <dimen name="home_secondary_cta_text">22sp</dimen>
-    <dimen name="home_countdown_size">88dp</dimen>
-    <dimen name="home_countdown_text">36sp</dimen>
+    <dimen name="home_cta_text">20sp</dimen>
+    <dimen name="home_secondary_cta_height">56dp</dimen>
+    <dimen name="home_secondary_cta_text">18sp</dimen>
+    <dimen name="home_countdown_size">64dp</dimen>
+    <dimen name="home_countdown_text">26sp</dimen>
     <dimen name="home_favorites_height">120dp</dimen>
     <!-- The page dots under the home's pages: the row, a dot, the current one, and the
          width each dot takes as a button. -->
@@ -56,5 +57,5 @@
     <dimen name="home_wifi_bars_height">20dp</dimen>
     <!-- The network name, and the icon the main button leads with (the size of its label). -->
     <dimen name="home_wifi_name_text">32sp</dimen>
-    <dimen name="home_cta_icon">38dp</dimen>
+    <dimen name="home_cta_icon">26dp</dimen>
 </resources>

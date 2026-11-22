@@ -8,7 +8,7 @@
     android:layout_weight="1"
     android:background="@drawable/rb_media_bg"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="20dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,16 +18,16 @@
 
         <FrameLayout
             android:id="@+id/rb_media_player"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:background="@drawable/rb_icon_tile"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
                 android:id="@+id/rb_media_app_icon"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="center"
                 android:importantForAccessibility="no"
                 app:srcCompat="@drawable/rb_ic_note"
@@ -78,7 +78,7 @@
             android:maxLines="3"
             android:text="@string/rb_nothing_playing"
             android:textColor="@color/rb_text"
-            android:textSize="26sp" />
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/rb_media_artist"
@@ -118,8 +118,8 @@
 
         <FrameLayout
             android:id="@+id/rb_media_prev"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:background="@drawable/rb_btn_tonal"
             android:clickable="true"
             android:contentDescription="@string/rb_media_prev"
@@ -137,7 +137,7 @@
         <FrameLayout
             android:id="@+id/rb_media_toggle"
             android:layout_width="0dp"
-            android:layout_height="84dp"
+            android:layout_height="76dp"
             android:layout_marginLeft="14dp"
             android:layout_marginRight="14dp"
             android:layout_weight="1"
@@ -158,8 +158,8 @@
 
         <FrameLayout
             android:id="@+id/rb_media_next"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:background="@drawable/rb_btn_tonal"
             android:clickable="true"
             android:contentDescription="@string/rb_media_next"

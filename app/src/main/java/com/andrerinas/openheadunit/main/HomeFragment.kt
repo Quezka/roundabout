@@ -674,6 +674,8 @@ class HomeFragment : Fragment() {
             speed = HomeUiHelper.speedText(gpsSpeedKmh),
             countdownVisible = decision?.status == HomePrimaryPolicy.Status.RECONNECTING
         )
+        // roundabout drive card shows date + speed => no copy in main card corner
+        if (rbCards?.present == true) root.findViewById<View>(R.id.home_info)?.visibility = View.GONE
     }
 
     // The format follows the unit's locale and its 12/24 hour setting, which is what the driver
