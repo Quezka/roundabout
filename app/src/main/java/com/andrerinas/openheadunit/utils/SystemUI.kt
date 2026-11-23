@@ -309,8 +309,12 @@ object SystemUI {
                 Settings.FullscreenMode.STATUS_ONLY -> WindowInsetsCompat.Type.navigationBars() or cutout
                 Settings.FullscreenMode.NONE -> WindowInsetsCompat.Type.systemBars() or cutout
             }
-            val bars = if (policy.automatic) Insets.NONE
+            val raw = if (policy.automatic) Insets.NONE
                 else insets.getInsets(mask or WindowInsetsCompat.Type.ime())
+            // roundabout rail overscan arrives as a left "bar" the decor already pads -> drop it
+            val rail = if (com.andrerinas.openheadunit.roundabout.RoundaboutRailService.running)
+                com.andrerinas.openheadunit.roundabout.RoundaboutRailService.railPx(root.context) else 0
+            val bars = if (rail > 0 && raw.left >= rail - 2) Insets.of(raw.left - rail, raw.top, raw.right, raw.bottom) else raw
             val manual = policy.manual
             val padding = Insets.of(
                 bars.left + manual.left, bars.top + manual.top,

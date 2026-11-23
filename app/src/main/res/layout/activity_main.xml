@@ -296,7 +296,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:indeterminate="true"
-                    android:indeterminateTint="@color/rb_accent" />
+                    android:indeterminateTint="@color/rb_accent"
+                    android:indeterminateTintMode="src_in" />
 
                 <ImageView
                     android:layout_width="88dp"

@@ -51,6 +51,14 @@
     </style>
 
     <style name="DarkAlertDialog" parent="Theme.Material3.DayNight.Dialog.Alert">
+        <!-- roundabout: neutral card surface, no primary-tinted elevation ; bold titles ; bigger rows -->
+        <item name="colorSurface">@color/rb_card</item>
+        <item name="colorSurfaceContainerHigh">@color/rb_card</item>
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="textAppearanceHeadlineSmall">@style/RbDialogTitle</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/RbDialogTitleText</item>
+        <item name="textAppearanceBodyLarge">@style/RbDialogBody</item>
+        <item name="textAppearanceSubtitle1">@style/RbDialogBody</item>
         <item name="fontFamily">@font/manrope</item>
         <item name="android:fontFamily">@font/manrope</item>
         <item name="colorPrimary">@color/brand_primary</item>
@@ -236,4 +244,29 @@
         <item name="android:backgroundDimEnabled">true</item>
     </style>
 
+    <style name="RbDialogTitle" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">@font/manrope_bold</item>
+        <item name="fontFamily">@font/manrope_bold</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/rb_text</item>
+    </style>
+
+    <style name="RbDialogTitleText" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textAppearance">@style/RbDialogTitle</item>
+        <item name="android:fontFamily">@font/manrope_bold</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="RbDialogBody" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/manrope_medium</item>
+        <item name="fontFamily">@font/manrope_medium</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <!-- roundabout: screen titles in bold manrope -->
+    <style name="RbToolbarTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/manrope_bold</item>
+        <item name="fontFamily">@font/manrope_bold</item>
+        <item name="android:textSize">24sp</item>
+    </style>
 </resources>

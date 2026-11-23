@@ -5,13 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorSurface">
+    android:background="@android:color/black">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:title="@string/apps"
+        app:titleTextAppearance="@style/RbToolbarTitle"
         app:navigationIcon="@drawable/ic_arrow_back_white"
         app:titleTextColor="?android:attr/textColorPrimary"
         app:navigationIconTint="?android:attr/textColorPrimary">

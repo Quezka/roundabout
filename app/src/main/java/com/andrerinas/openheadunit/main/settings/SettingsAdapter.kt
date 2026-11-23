@@ -487,8 +487,9 @@ class SettingsAdapter : ListAdapter<SettingItem, RecyclerView.ViewHolder>(Settin
         )
 
         init {
-            val background = SettingsDrawables.checkedColors(colors.secondaryContainer, Color.TRANSPARENT)
-            val text = SettingsDrawables.checkedColors(colors.onSecondaryContainer, colors.onSurface)
+            // roundabout: chosen segment = accent, same as the header tabs
+            val background = SettingsDrawables.checkedColors(colors.primary, Color.TRANSPARENT)
+            val text = SettingsDrawables.checkedColors(colors.onPrimary, colors.onSurface)
             val stroke = ColorStateList.valueOf(colors.outline)
             for (button in buttons) {
                 button.backgroundTintList = background
