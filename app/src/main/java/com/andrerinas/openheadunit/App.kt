@@ -193,7 +193,9 @@ class App : Application(), Application.ActivityLifecycleCallbacks {
         }
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        com.andrerinas.openheadunit.roundabout.RoundaboutSetup.stripRailInset(activity)
+    }
     override fun onActivityStarted(activity: Activity) {
         startedActivityCount++
         if (startedActivityCount == 1) {

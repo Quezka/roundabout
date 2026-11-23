@@ -16,8 +16,8 @@
     android:orientation="horizontal"
     android:baselineAligned="false">
 
-    <!-- roundabout rail replaces oh driver bar ; bar kept gone <- HomeFragment reads its views -->
-    <include layout="@layout/view_rb_rail" />
+    <!-- roundabout rail = always-on overlay (RoundaboutRailService) in the overscan strip ;
+         oh driver bar kept gone <- HomeFragment reads its views -->
 
     <LinearLayout
         android:id="@+id/home_driver_bar"
@@ -134,10 +134,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:paddingRight="8dp"
-        android:paddingEnd="8dp"
+        android:padding="8dp"
         android:orientation="vertical">
 
         <com.andrerinas.openheadunit.main.HomePager

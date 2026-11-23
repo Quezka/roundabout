@@ -90,7 +90,12 @@ class RoundaboutCards(private val root: View) {
         val label = m.findViewById<TextView>(R.id.rb_media_app)
         val pkg = s.packageName
         val info = pkg?.let { try { ctx.packageManager.getApplicationInfo(it, 0) } catch (e: Exception) { null } }
-        if (info != null) {
+        if (pkg == ctx.packageName) {
+            // own session = android auto audio from the phone
+            icon?.setImageResource(R.drawable.rb_ic_aa)
+            icon?.let { ImageViewCompat.setImageTintList(it, null) }
+            label?.setText(R.string.rb_android_auto)
+        } else if (info != null) {
             icon?.setImageDrawable(ctx.packageManager.getApplicationIcon(info))
             icon?.let { ImageViewCompat.setImageTintList(it, null) }
             label?.text = ctx.packageManager.getApplicationLabel(info)

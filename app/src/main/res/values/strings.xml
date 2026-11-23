@@ -259,7 +259,7 @@
     <string name="no_apps_found">No applications found</string>
     <string name="video">Android Auto</string>
     <string name="self_mode">Self Mode</string>
-    <string name="title">Open Headunit</string>
+    <string name="title">Roundabout</string>
     <string name="remove">Remove</string>
     <string name="usb">USB</string>
     <string name="wifi">WiFi</string>
@@ -1994,4 +1994,6 @@
     <string name="rb_android_auto" translatable="false">Android Auto</string>
     <string name="rb_add_app">Add app</string>
     <string name="rb_exit_home">Home</string>
+    <string name="rb_volume">Volume</string>
+    <string name="rb_accessibility_description">Lets the Roundabout rail go back in any app and highlight the app you are using.</string>
 </resources>

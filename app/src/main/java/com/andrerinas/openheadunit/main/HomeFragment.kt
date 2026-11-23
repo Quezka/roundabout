@@ -264,6 +264,9 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rbCards = com.andrerinas.openheadunit.roundabout.RoundaboutCards(view)
+        view.findViewById<View>(R.id.rb_drive_settings)?.setOnClickListener {
+            startActivity(Intent(requireContext(), SettingsActivity::class.java))
+        }
         rbRail = com.andrerinas.openheadunit.roundabout.RoundaboutRail(
             view,
             onAndroidAuto = { onAndroidAutoClicked() },
@@ -1715,8 +1718,28 @@ class HomeFragment : Fragment() {
 
     // roundabout rail carries favorites + all apps => no favorites / widget row on main page
     private fun hideAreaForRail(root: View) {
-        if (rbRail == null) return
+        // rail (in-layout or always-on overlay) carries the favorites ; cards present = landscape home
+        if (rbRail == null && rbCards?.present != true) return
         root.findViewById<View>(R.id.home_favorites_area)?.visibility = View.GONE
+    }
+
+    // requests from the always-on rail (RoundaboutRailService)
+    private fun consumeRailRequests() {
+        val bus = com.andrerinas.openheadunit.roundabout.RoundaboutBus
+        bus.pickFavoriteSlot?.let { slot ->
+            bus.pickFavoriteSlot = null
+            view?.post { if (isAdded) openAppDrawer(favoriteSlot = slot) }
+            return
+        }
+        if (bus.openDrawer) {
+            bus.openDrawer = false
+            view?.post { if (isAdded) openAppDrawer() }
+            return
+        }
+        if (bus.startAndroidAuto) {
+            bus.startAndroidAuto = false
+            view?.post { if (isAdded) onAndroidAutoClicked() }
+        }
     }
 
     // aa mark (rail): live session -> back to it ; else same as card main button
@@ -2250,6 +2273,7 @@ class HomeFragment : Fragment() {
         startHomeInfo()
         rbCards?.start()
         rbRail?.start()
+        consumeRailRequests()
         showUsbAccessHintIfNeeded()
 
         val appSettings = App.provide(requireContext()).settings

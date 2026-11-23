@@ -108,7 +108,6 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     // "Show over lock screen": the open exit dialog (closed when the unit locks), the last
     // "Locked" hint, and the receiver that follows screen-off and unlock.
     private var exitDialog: androidx.appcompat.app.AlertDialog? = null
-    private var rbAaRail: com.andrerinas.openheadunit.roundabout.RoundaboutAaRail? = null
     private var lastLockedHintMs = 0L
     private var isLockStateReceiverRegistered = false
     private val lockStateReceiver = object : BroadcastReceiver() {
@@ -1146,9 +1145,6 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         registerAudioModeListener()
 
         setContentView(R.layout.activity_headunit)
-        rbAaRail = com.andrerinas.openheadunit.roundabout.RoundaboutAaRail.attach(
-            this, settings, onHome = { moveToBackground() }, onMenu = { showExitDialog() }
-        )
 
         if (settings.showPerformanceOverlay) {
             attachPerformanceOverlay()
@@ -1527,6 +1523,11 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         super.onNewIntent(intent)
         AppLog.i("AapProjectionActivity: onNewIntent received")
         applyTurnScreenOn(intent)
+        // roundabout rail menu button
+        if (intent.getBooleanExtra(com.andrerinas.openheadunit.roundabout.RoundaboutRailService.EXTRA_EXIT_MENU, false)) {
+            intent.removeExtra(com.andrerinas.openheadunit.roundabout.RoundaboutRailService.EXTRA_EXIT_MENU)
+            window.decorView.post { showExitDialog() }
+        }
     }
 
     /** Lights the panel, and asks to lift a keyguard, for a service-raised screen-on; onPause clears it so a later resume does not. */
@@ -2969,8 +2970,6 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     override fun onDestroy() {
-        rbAaRail?.detach()
-        rbAaRail = null
         clearTwoFingerTracking()
         // TextureView/GLES destruction can arrive after this activity removes its callback.
         // Stop our target now, while it is still valid, without touching a replacement owner.

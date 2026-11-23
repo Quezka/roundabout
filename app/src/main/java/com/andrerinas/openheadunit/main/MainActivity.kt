@@ -151,8 +151,9 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         requestedOrientation = Settings(this).screenOrientation.androidOrientation
-        // roundabout: room for the rail beside android auto, before any screen config
-        com.andrerinas.openheadunit.roundabout.RoundaboutAaRail.ensureInset(this, Settings(this))
+        // roundabout: rail = overscan now ; drop the old left inset made for the in-projection rail
+        com.andrerinas.openheadunit.roundabout.RoundaboutSetup.migrate(this, Settings(this))
+        com.andrerinas.openheadunit.roundabout.RoundaboutRailService.start(this)
         super.onCreate(savedInstanceState)
 
         applyTurnScreenOn(intent)
