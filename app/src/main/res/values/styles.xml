@@ -58,7 +58,6 @@
         <item name="colorSecondary">@color/brand_primary</item>
         <item name="colorOnSecondary">#121212</item>
         <item name="android:colorAccent">@color/brand_primary</item>
-        <item name="android:background">?attr/colorSurface</item>
         <item name="android:textColorPrimary">@color/adaptive_text_color</item>
         <item name="buttonBarPositiveButtonStyle">@style/DialogButton.Positive</item>
         <item name="buttonBarNegativeButtonStyle">@style/DialogButton.Negative</item>
