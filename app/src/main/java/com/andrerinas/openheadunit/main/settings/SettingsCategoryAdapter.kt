@@ -110,7 +110,8 @@ class SettingsCategoryAdapter(
 
         fun bind(category: SettingsCategory, active: Boolean, colors: SettingsPalette) {
             val context = itemView.context
-            val content = if (active) colors.onSecondaryContainer else colors.onSurfaceVariant
+            // roundabout: active section = accent pill
+            val content = if (active && asRail) colors.onPrimary else if (active) colors.onSecondaryContainer else colors.onSurfaceVariant
             title.setText(category.titleResId)
             title.setTextColor(content)
             icon.setImageDrawable(
@@ -119,7 +120,7 @@ class SettingsCategoryAdapter(
             // Rail rows are a full pill (their height is fixed); chips use Material's 8dp corners.
             val radius = if (asRail) context.resources.getDimension(R.dimen.settings_rail_item_height) / 2f
                 else SettingsDrawables.dp(context, CHIP_RADIUS_DP)
-            val fill = if (active) colors.secondaryContainer else android.graphics.Color.TRANSPARENT
+            val fill = if (active && asRail) colors.primary else if (active) colors.secondaryContainer else android.graphics.Color.TRANSPARENT
             // Chips keep an outline when idle so the row reads as tappable; the rail does not.
             val stroke = if (!asRail && !active) colors.outlineVariant else null
             itemView.background = SettingsDrawables.selectionPill(context, fill, stroke, radius, colors)

@@ -39,29 +39,29 @@
 
         <FrameLayout
             android:id="@+id/rb_rail_aa"
-            android:layout_width="72dp"
+            android:layout_width="76dp"
             android:layout_height="72dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/rb_rail_app"
+            android:background="@drawable/rb_rail_btn"
             android:clickable="true"
             android:contentDescription="@string/rb_android_auto"
             android:focusable="true">
 
             <ImageView
-                android:id="@+id/rb_rail_aa_ring"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_gravity="center"
                 android:importantForAccessibility="no"
-                android:src="@drawable/rb_aa_ring"
-                android:visibility="invisible" />
+                android:src="@drawable/rb_ic_aa" />
 
             <ImageView
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:layout_gravity="center"
+                android:id="@+id/rb_rail_aa_ring"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:importantForAccessibility="no"
-                app:srcCompat="@drawable/rb_ic_aa" />
+                android:src="@drawable/rb_aa_ring"
+                android:scaleType="fitXY"
+                android:visibility="invisible" />
         </FrameLayout>
 
         <View

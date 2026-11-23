@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- roundabout: mini wings on plain dark ; png = nodpi => same size before api 23 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/splash_background" />
-    <item
-        android:width="160dp"
-        android:height="160dp"
-        android:gravity="center">
+    <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/splash_logo" />
+            android:src="@drawable/rb_mini_logo" />
     </item>
 </layer-list>

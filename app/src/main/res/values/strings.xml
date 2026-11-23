@@ -1993,4 +1993,5 @@
     <string name="rb_media_pause">Pause</string>
     <string name="rb_android_auto" translatable="false">Android Auto</string>
     <string name="rb_add_app">Add app</string>
+    <string name="rb_exit_home">Home</string>
 </resources>

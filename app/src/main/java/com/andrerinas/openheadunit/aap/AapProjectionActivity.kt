@@ -1633,7 +1633,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         findViewById<View>(R.id.loading_custom_text_overlay)?.visibility = View.GONE
         stopCustomLoadingMedia()
         findViewById<View>(R.id.loading_custom_video)?.visibility = View.GONE
-        overlay.setBackgroundColor(Color.parseColor("#CC000000"))
+        overlay.setBackgroundColor(Color.parseColor("#F20F1012"))
 
         val title = findViewById<TextView>(R.id.overlay_text)
         val detail = findViewById<TextView>(R.id.overlay_detail)
@@ -1886,7 +1886,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         findViewById<View>(R.id.loading_custom_video)?.visibility = View.GONE
         findViewById<View>(R.id.loading_custom_text_overlay)?.visibility = View.GONE
         findViewById<View>(R.id.loading_default_content)?.visibility = View.VISIBLE
-        findViewById<View>(R.id.loading_overlay)?.setBackgroundColor(Color.parseColor("#CC000000"))
+        findViewById<View>(R.id.loading_overlay)?.setBackgroundColor(Color.parseColor("#F20F1012"))
     }
 
     private fun stopCustomLoadingMedia() {
@@ -1978,52 +1978,73 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             )
         ).map(::exitOption)
 
-        val adapter = object : android.widget.BaseAdapter() {
-            override fun getCount(): Int = options.size
-            override fun getItem(position: Int): Any = options[position]
-            override fun getItemId(position: Int): Long = position.toLong()
-            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
-                val view = convertView ?: dialogInflater.inflate(R.layout.dialog_exit_item, parent, false)
-                val option = options[position]
-                val iconView = view.findViewById<android.widget.ImageView>(R.id.icon)
-                val textView = view.findViewById<android.widget.TextView>(R.id.text)
-
-                textView.setText(option.titleResId)
-                iconView.setImageResource(option.iconResId)
-                iconView.setColorFilter(option.iconColor)
-
-                return view
+        // roundabout: big tiles, home first, stop last + red
+        val homeApp = CarLauncherManager.isDefaultLauncher(this)
+        val ordered = options.sortedBy {
+            when (it.titleResId) {
+                R.string.exit_dialog_background -> 0
+                R.string.exit_dialog_stop -> 9
+                else -> 5
             }
+        }
+        val content = dialogInflater.inflate(R.layout.dialog_rb_exit, null)
+        val tiles = content.findViewById<android.widget.LinearLayout>(R.id.rb_exit_tiles)
+        val density = resources.displayMetrics.density
+        var dialogRef: androidx.appcompat.app.AlertDialog? = null
+        ordered.forEachIndexed { index, option ->
+            val stop = option.titleResId == R.string.exit_dialog_stop
+            val label = if (option.titleResId == R.string.exit_dialog_background && homeApp) {
+                getString(R.string.rb_exit_home)
+            } else {
+                getString(option.titleResId)
+            }
+            val tile = android.widget.LinearLayout(builder.context).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                gravity = android.view.Gravity.CENTER
+                setPadding((12 * density).toInt(), (12 * density).toInt(), (12 * density).toInt(), (12 * density).toInt())
+                background = androidx.core.content.ContextCompat.getDrawable(
+                    context, if (stop) R.drawable.rb_exit_stop else R.drawable.rb_exit_tile
+                )
+                isClickable = true
+                isFocusable = true
+                contentDescription = label
+                addView(android.widget.ImageView(context).apply {
+                    setImageResource(option.iconResId)
+                    setColorFilter(if (stop) Color.rgb(0xFF, 0x6B, 0x5E) else Color.rgb(0xF2, 0xF3, 0xF5))
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                }, android.widget.LinearLayout.LayoutParams((40 * density).toInt(), (40 * density).toInt()))
+                addView(TextView(context).apply {
+                    text = label
+                    gravity = android.view.Gravity.CENTER
+                    maxLines = 2
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    textSize = 18f
+                    setTextColor(if (stop) Color.rgb(0xFF, 0x8A, 0x80) else Color.rgb(0xF2, 0xF3, 0xF5))
+                    try {
+                        typeface = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.manrope_bold)
+                    } catch (e: Exception) { }
+                }, android.widget.LinearLayout.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = (12 * density).toInt() })
+                setOnClickListener {
+                    dialogRef?.dismiss()
+                    onExitOption(option.titleResId)
+                }
+            }
+            tiles.addView(tile, android.widget.LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
+                if (index > 0) {
+                    leftMargin = (14 * density).toInt()
+                    marginStart = (14 * density).toInt()
+                }
+            })
         }
 
         val dialog = builder
-            .setTitle(R.string.exit_dialog_title)
-            .setAdapter(adapter) { _, which ->
-                val selected = options[which]
-                when (selected.titleResId) {
-                    R.string.exit_dialog_stop -> {
-                        requestProjectionExit()
-                        finish()
-                    }
-                    R.string.exit_dialog_end_stay_armed -> {
-                        endSessionStayArmed()
-                    }
-                    R.string.exit_dialog_pip -> {
-                        enterPiP()
-                    }
-                    R.string.exit_dialog_background -> {
-                        moveToBackground()
-                    }
-                    R.string.exit_dialog_settings -> {
-                        showQuickSettings()
-                    }
-                    R.string.switch_driver -> {
-                        switchDriver()
-                    }
-                }
-            }
-            .setNegativeButton(R.string.cancel, null)
+            .setView(content)
+            .setBackground(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT))
             .create()
+        dialogRef = dialog
+        content.findViewById<View>(R.id.rb_exit_close)?.setOnClickListener { dialog.dismiss() }
 
         val mode = activityFullscreenOverride ?: settings.fullscreenMode
         val dialogWindow = dialog.window
@@ -2032,6 +2053,12 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         dialogWindow?.let { SystemUI.applySystemBars(it, mode) }
         dialog.show()
         exitDialog = dialog
+        // tiles need width: ~ whole screen minus margins, capped
+        dialogWindow?.let {
+            val metrics = resources.displayMetrics
+            val width = minOf((metrics.widthPixels * 0.9f).toInt(), (900 * metrics.density).toInt())
+            it.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
         dialogWindow?.let {
             SystemUI.applySystemBars(it, mode)
             it.clearFlags(android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
@@ -2040,6 +2067,20 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         if (settings.hudMirroring) {
             val root = dialog.window?.findViewById<View>(android.R.id.content) ?: dialog.window?.decorView
             root?.scaleX = -1.0f
+        }
+    }
+
+    private fun onExitOption(titleResId: Int) {
+        when (titleResId) {
+            R.string.exit_dialog_stop -> {
+                requestProjectionExit()
+                finish()
+            }
+            R.string.exit_dialog_end_stay_armed -> endSessionStayArmed()
+            R.string.exit_dialog_pip -> enterPiP()
+            R.string.exit_dialog_background -> moveToBackground()
+            R.string.exit_dialog_settings -> showQuickSettings()
+            R.string.switch_driver -> switchDriver()
         }
     }
 

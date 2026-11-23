@@ -139,15 +139,16 @@ class SettingsHeaderController(
     // --- Setup ---
 
     private fun styleControls() {
-        val tabBackground = SettingsDrawables.checkedColors(palette.secondaryContainer, Color.TRANSPARENT)
-        val tabText = SettingsDrawables.checkedColors(palette.onSecondaryContainer, palette.onSurface)
+        // roundabout: checked tab = accent pill
+        val tabBackground = SettingsDrawables.checkedColors(palette.primary, Color.TRANSPARENT)
+        val tabText = SettingsDrawables.checkedColors(palette.onPrimary, palette.onSurface)
         val tabRadius = res.getDimensionPixelSize(R.dimen.settings_tab_height) / 2
         for (tab in listOf(tabBasic, tabAdvanced)) {
             tab.backgroundTintList = tabBackground
             tab.setTextColor(tabText)
             tab.strokeColor = ColorStateList.valueOf(palette.outline)
             tab.rippleColor = ColorStateList.valueOf(palette.secondaryContainer)
-            tab.iconTint = ColorStateList.valueOf(palette.onSecondaryContainer)
+            tab.iconTint = ColorStateList.valueOf(palette.onPrimary)
             tab.cornerRadius = tabRadius
         }
         styleFilledButton(saveButton, palette)
