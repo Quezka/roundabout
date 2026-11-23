@@ -10,8 +10,6 @@ object RoundaboutSetup {
     private const val INSET_V2 = "rb-rail-overscan-v2"
     private const val TEXTURE_V3 = "rb-texture-view-v3"
     private const val MEDIA_SYNC_V4 = "rb-media-sync-v4"
-    private const val NO_FORCED_SCALE_V5 = "rb-no-forced-scale-v5"
-    private const val NO_LOCK_HOLD_V6 = "rb-no-lock-hold-v6"
 
     fun migrate(context: Context, settings: Settings) {
         val prefs = context.getSharedPreferences(Settings.PREFS_NAME, Context.MODE_PRIVATE)
@@ -21,20 +19,13 @@ object RoundaboutSetup {
             prefs.edit().putBoolean(MEDIA_SYNC_V4, true).apply()
         }
         // no lock screen here (systemui off) ; keyguard state reads "locked" -> input hold blocks aa
-        if (!prefs.getBoolean(NO_LOCK_HOLD_V6, false)) {
-            settings.showOverLockScreen = false
-            prefs.edit().putBoolean(NO_LOCK_HOLD_V6, true).apply()
-        }
+        // every start <- auto-optimize / restore can turn it back on
+        if (settings.showOverLockScreen) settings.showOverLockScreen = false
         // forced scale stretches the whole frame while the phone keeps a margin for the rail -> offset
-        if (!prefs.getBoolean(NO_FORCED_SCALE_V5, false)) {
-            settings.forcedScale = false
-            prefs.edit().putBoolean(NO_FORCED_SCALE_V5, true).apply()
-        }
-        // surfaceview lands one overscan strip too far right (5.x) -> textureview
-        if (!prefs.getBoolean(TEXTURE_V3, false)) {
-            if (settings.viewMode == Settings.ViewMode.SURFACE) settings.viewMode = Settings.ViewMode.TEXTURE
-            prefs.edit().putBoolean(TEXTURE_V3, true).apply()
-        }
+        if (settings.forcedScale) settings.forcedScale = false
+        // surfaceview lands one overscan strip too far right (5.x) -> textureview, every start
+        // <- auto-optimize can pick surface again
+        if (settings.viewMode == Settings.ViewMode.SURFACE) settings.viewMode = Settings.ViewMode.TEXTURE
         if (prefs.getBoolean(INSET_V2, false)) return
         // v1 set left inset = rail width for an in-projection rail ; overscan does that now
         if (prefs.getBoolean("rb-aa-rail-inset-v1", false) &&

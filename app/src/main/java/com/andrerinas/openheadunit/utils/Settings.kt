@@ -434,8 +434,7 @@ class Settings(private val context: Context) {
     var viewMode: ViewMode
         get() {
             val value = prefs.getInt("view-mode", 1)
-            // roundabout: surfaceview lands one overscan strip off on 5.x -> never surface
-            return ViewMode.fromInt(value)!!.let { if (it == ViewMode.SURFACE) ViewMode.TEXTURE else it }
+            return ViewMode.fromInt(value)!!
         }
         set(viewMode) {
             prefs.edit().putInt("view-mode", viewMode.value).apply()
@@ -443,8 +442,12 @@ class Settings(private val context: Context) {
 
     var screenOrientation: ScreenOrientation
         get() {
-            // roundabout: car tablet, landscape only ; stored choice ignored
-            return ScreenOrientation.LANDSCAPE
+            // roundabout: car tablet, landscape only ; portrait + sensor choices fall back to landscape
+            val stored = ScreenOrientation.fromInt(prefs.getInt(KEY_SCREEN_ORIENTATION, 0)) ?: ScreenOrientation.SYSTEM
+            return when (stored) {
+                ScreenOrientation.PORTRAIT, ScreenOrientation.PORTRAIT_REVERSE, ScreenOrientation.AUTO -> ScreenOrientation.LANDSCAPE
+                else -> stored
+            }
         }
         set(orientation) {
             prefs.edit().putInt(KEY_SCREEN_ORIENTATION, orientation.value).apply()
