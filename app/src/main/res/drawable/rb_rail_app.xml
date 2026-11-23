@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- rail app slot: no fill ; press = soft square -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true"><shape><solid android:color="@color/rb_container_high" /><corners android:radius="18dp" /></shape></item>
+    <item android:state_focused="true"><shape><solid android:color="@android:color/transparent" /><stroke android:width="2dp" android:color="@color/rb_text" /><corners android:radius="18dp" /></shape></item>
+    <item><shape><solid android:color="@android:color/transparent" /><corners android:radius="18dp" /></shape></item>
+</selector>

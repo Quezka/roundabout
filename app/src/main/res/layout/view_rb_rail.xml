@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- roundabout rail: clock + battery, android auto, favorite apps, settings, all apps -->
+<!-- apps column filled @ RoundaboutRail -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rb_rail"
+    android:layout_width="112dp"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="8dp"
+        android:background="@drawable/rb_rail_bg"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="14dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:id="@+id/rb_rail_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/manrope_bold"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/rb_text"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/rb_rail_battery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/manrope_bold"
+            android:maxLines="1"
+            android:textColor="@color/rb_muted"
+            android:textSize="14sp" />
+
+        <FrameLayout
+            android:id="@+id/rb_rail_aa"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rb_rail_app"
+            android:clickable="true"
+            android:contentDescription="@string/rb_android_auto"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/rb_rail_aa_ring"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                android:src="@drawable/rb_aa_ring"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/rb_ic_aa" />
+        </FrameLayout>
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="10dp"
+            android:background="@color/rb_container_highest" />
+
+        <LinearLayout
+            android:id="@+id/rb_rail_apps"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="6dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical" />
+
+        <FrameLayout
+            android:id="@+id/rb_rail_exit"
+            android:layout_width="64dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/rb_rail_btn"
+            android:clickable="true"
+            android:contentDescription="@string/exit"
+            android:focusable="true"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/ic_power_white"
+                app:tint="@color/rb_muted" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/rb_rail_settings"
+            android:layout_width="64dp"
+            android:layout_height="56dp"
+            android:background="@drawable/rb_rail_btn"
+            android:clickable="true"
+            android:contentDescription="@string/settings"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/ic_settings_white"
+                app:tint="@color/rb_text" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/rb_rail_all"
+            android:layout_width="64dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/rb_rail_btn_accent"
+            android:clickable="true"
+            android:contentDescription="@string/home_all_apps"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/ic_apps"
+                app:tint="@color/rb_on_accent" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

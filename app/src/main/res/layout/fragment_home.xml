@@ -14,13 +14,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:baselineAligned="false"
-    android:padding="@dimen/home_gap"
-    android:divider="@drawable/home_gap"
-    android:showDividers="middle">
+    android:baselineAligned="false">
+
+    <!-- roundabout rail replaces oh driver bar ; bar kept gone <- HomeFragment reads its views -->
+    <include layout="@layout/view_rb_rail" />
 
     <LinearLayout
         android:id="@+id/home_driver_bar"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -133,6 +134,10 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingRight="8dp"
+        android:paddingEnd="8dp"
         android:orientation="vertical">
 
         <com.andrerinas.openheadunit.main.HomePager
@@ -182,7 +187,11 @@
 
                     </LinearLayout>
 
-                    <include layout="@layout/view_rb_media_card" />
+                    <include
+                        layout="@layout/view_rb_media_card"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.85" />
 
                 </LinearLayout>
 

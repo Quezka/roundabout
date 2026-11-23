@@ -150,6 +150,7 @@ class HomeFragment : Fragment() {
     private var homeInfoTicker: Job? = null
     private var gpsListener: LocationListener? = null
     private var gpsSpeedKmh: Int? = null
+    private var rbRail: com.andrerinas.openheadunit.roundabout.RoundaboutRail? = null
     private var rbCards: com.andrerinas.openheadunit.roundabout.RoundaboutCards? = null
     /** The launcher home on a small screen, where the main button's card gives way to the rest. */
     private var compactHome = false
@@ -263,6 +264,15 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rbCards = com.andrerinas.openheadunit.roundabout.RoundaboutCards(view)
+        rbRail = com.andrerinas.openheadunit.roundabout.RoundaboutRail(
+            view,
+            onAndroidAuto = { onAndroidAutoClicked() },
+            onFavorite = { onFavoriteClicked(it) },
+            onFavoriteLong = { slot, anchor -> showFavoriteMenu(slot, anchor) },
+            onSettings = { startActivity(Intent(requireContext(), SettingsActivity::class.java)) },
+            onAllApps = { openAppDrawer() },
+            onExit = { exitApp() },
+        ).takeIf { it.present }
         renderHome()
 
         activity?.findViewById<View>(R.id.status_notices)?.let { notices ->
@@ -524,6 +534,7 @@ class HomeFragment : Fragment() {
             facts = status.facts(),
         )
         HomeUiHelper.applyWifiStatus(ctx, root, appSettings, decision, homePalette(ctx), line, status.isScanning)
+        rbCards?.styleConnectionCard()
     }
 
     private fun renderHome() {
@@ -568,6 +579,8 @@ class HomeFragment : Fragment() {
         HomeUiHelper.applyHotspotWait(ctx, root, waiting)
         renderWifiStatus()
         renderHomeInfo()
+        rbCards?.styleConnectionCard()
+        rbRail?.renderSession(decision.status == HomePrimaryPolicy.Status.ACTIVE_SESSION)
         reportBringUpOwner()
         // Cancel, the progress bar and the step come and go with the status, so the lines that fit
         // change with it, not only with the layout.
@@ -665,6 +678,7 @@ class HomeFragment : Fragment() {
         val ctx = context ?: return
         val root = view ?: return
         rbCards?.renderInfo(dateText(), gpsSpeedKmh)
+        rbRail?.renderClock(clockText())
         HomeUiHelper.applyInfoBlock(
             rootView = root,
             settings = App.provide(ctx).settings,
@@ -809,6 +823,11 @@ class HomeFragment : Fragment() {
         }
         applyHomeLayout(root, appSettings, isLauncherActive)
         renderWidgets()
+        rbRail?.let { rail ->
+            rail.renderExit(shouldShowExit)
+            rail.renderFavorites(appSettings.homeFavoriteApps, isLauncherActive)
+            hideAreaForRail(root)
+        }
         scheduleCardFit(root)
     }
 
@@ -1262,6 +1281,7 @@ class HomeFragment : Fragment() {
         val pm = ctx.packageManager
         val appSettings = App.provide(requireContext()).settings
         val targets = appSettings.homeFavoriteApps
+        rbRail?.renderFavorites(targets, appSettings.isCarLauncherActive)
         viewLifecycleOwner.lifecycleScope.launch {
             val apps = withContext(Dispatchers.IO) { targets.map { loadFavorite(ctx, pm, it) } }
             apps.forEachIndexed { slot, app -> bindFavorite(favoriteSlots[slot], app) }
@@ -1372,6 +1392,7 @@ class HomeFragment : Fragment() {
         }
         scroll.visibility = View.VISIBLE
         root.findViewById<View>(R.id.home_favorites_area)?.visibility = View.VISIBLE
+        hideAreaForRail(root)
         val addTileHeight = ctx.resources.getDimensionPixelSize(R.dimen.home_favorites_height)
         val tallest = ids.maxOfOrNull { HomeWidgets.minHeightPx(ctx, it) } ?: 0
         // One frame later: changing the row's height or hiding it inside the layout pass does not
@@ -1690,6 +1711,17 @@ class HomeFragment : Fragment() {
         }
         appSettings.homeWidgets = updated
         if (widgetRowOverflows) refreshPages() else renderWidgets()
+    }
+
+    // roundabout rail carries favorites + all apps => no favorites / widget row on main page
+    private fun hideAreaForRail(root: View) {
+        if (rbRail == null) return
+        root.findViewById<View>(R.id.home_favorites_area)?.visibility = View.GONE
+    }
+
+    // aa mark (rail): live session -> back to it ; else same as card main button
+    private fun onAndroidAutoClicked() {
+        if (sessionLive()) openProjection() else onPrimaryActionClicked()
     }
 
     private fun onFavoriteClicked(slot: Int) {
@@ -2217,6 +2249,7 @@ class HomeFragment : Fragment() {
         renderHome()
         startHomeInfo()
         rbCards?.start()
+        rbRail?.start()
         showUsbAccessHintIfNeeded()
 
         val appSettings = App.provide(requireContext()).settings
@@ -2499,6 +2532,7 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         rbCards?.stop()
+        rbRail?.stop()
         rbCards = null
         super.onDestroyView()
         noticesLayoutListener?.let { activity?.findViewById<View>(R.id.status_notices)?.removeOnLayoutChangeListener(it) }
@@ -2528,6 +2562,7 @@ class HomeFragment : Fragment() {
         driverCountdownTimer = null
         stopHomeInfo()
         rbCards?.stop()
+        rbRail?.stop()
         activeDialog?.dismiss()
         activeDialog = null
         actionDialog?.dismiss()

@@ -101,6 +101,50 @@ class RoundaboutCards(private val root: View) {
         }
     }
 
+    // oh connection card -> roundabout look: card surface, aa mark, orange pill with the mark
+    // run after every oh paint of the card <- oh repaints it per state
+    fun styleConnectionCard() {
+        val card = root.findViewById<View>(R.id.home_primary_card) ?: return
+        if (drive == null) return
+        card.background = ContextCompat.getDrawable(ctx, R.drawable.rb_card_bg)
+        val density = ctx.resources.displayMetrics.density
+        root.findViewById<View>(R.id.home_primary_icon_tile)?.apply {
+            visibility = View.VISIBLE
+            background = null
+            val px = (64 * density).toInt()
+            layoutParams?.let { if (it.width != px) { it.width = px; it.height = px; layoutParams = it } }
+        }
+        root.findViewById<View>(R.id.home_primary_icon)?.apply {
+            val px = (60 * density).toInt()
+            layoutParams?.let { if (it.width != px) { it.width = px; it.height = px; layoutParams = it } }
+        }
+        root.findViewById<ImageView>(R.id.home_primary_icon)?.apply {
+            clearColorFilter()
+            setImageResource(R.drawable.rb_ic_aa)
+        }
+        val ink = ContextCompat.getColor(ctx, R.color.rb_text)
+        val inkMuted = ContextCompat.getColor(ctx, R.color.rb_muted)
+        root.findViewById<TextView>(R.id.home_primary_kicker)?.setTextColor(ContextCompat.getColor(ctx, R.color.rb_accent))
+        root.findViewById<TextView>(R.id.home_primary_title)?.setTextColor(ink)
+        root.findViewById<TextView>(R.id.home_primary_subtitle)?.setTextColor(inkMuted)
+        root.findViewById<TextView>(R.id.home_primary_detail)?.setTextColor(inkMuted)
+        root.findViewById<TextView>(R.id.home_primary_action)?.apply {
+            background = ContextCompat.getDrawable(ctx, R.drawable.rb_btn_primary)
+            setTextColor(ContextCompat.getColor(ctx, R.color.rb_on_accent))
+            contentDescription?.let { if (text.toString() != it.toString()) text = it }
+            val mark = ContextCompat.getDrawable(ctx, R.drawable.rb_ic_aa)
+            val px = (32 * resources.displayMetrics.density).toInt()
+            mark?.setBounds(0, 0, px, px)
+            setCompoundDrawables(mark, null, null, null)
+            compoundDrawablePadding = (12 * resources.displayMetrics.density).toInt()
+            typeface = androidx.core.content.res.ResourcesCompat.getFont(ctx, R.font.manrope_bold)
+        }
+        root.findViewById<TextView>(R.id.home_primary_cancel)?.apply {
+            background = ContextCompat.getDrawable(ctx, R.drawable.rb_btn_tonal)
+            setTextColor(ink)
+        }
+    }
+
     private fun openPlayer() {
         val pkg = state.packageName ?: return
         val intent = ctx.packageManager.getLaunchIntentForPackage(pkg) ?: return
