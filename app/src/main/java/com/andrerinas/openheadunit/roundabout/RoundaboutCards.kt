@@ -41,7 +41,7 @@ class RoundaboutCards(private val root: View) {
     fun start() {
         if (media == null) return
         watcher.start()
-        renderMedia(state)
+        renderMedia(lastIncoming)
     }
 
     fun stop() = watcher.stop()
@@ -60,7 +60,12 @@ class RoundaboutCards(private val root: View) {
         gauge?.setSpeed(speedKmh)
     }
 
-    private fun renderMedia(s: MediaState) {
+    private var lastIncoming = MediaState.NONE
+
+    private fun renderMedia(incoming: MediaState) {
+        lastIncoming = incoming
+        // own session = android auto audio ; without a live session it only holds a placeholder
+        val s = if (incoming.packageName == ctx.packageName && !aaLive()) MediaState.NONE else incoming
         state = s
         val m = media ?: return
         val access = watcher.hasAccess()
@@ -107,6 +112,15 @@ class RoundaboutCards(private val root: View) {
             label?.text = ""
         }
     }
+
+    private fun aaLive(): Boolean = try {
+        val st = com.andrerinas.openheadunit.App.provide(ctx).commManager.connectionState.value
+        st is com.andrerinas.openheadunit.connection.CommManager.ConnectionState.HandshakeComplete ||
+            st is com.andrerinas.openheadunit.connection.CommManager.ConnectionState.TransportStarted
+    } catch (e: Exception) { false }
+
+    // re-read when the session comes or goes
+    fun refreshMedia() = renderMedia(lastIncoming)
 
     // oh connection card -> roundabout look: card surface, aa mark, orange pill with the mark
     // run after every oh paint of the card <- oh repaints it per state

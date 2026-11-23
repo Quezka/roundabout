@@ -581,6 +581,7 @@ class HomeFragment : Fragment() {
         renderHomeInfo()
         rbCards?.styleConnectionCard()
         rbRail?.renderSession(decision.status == HomePrimaryPolicy.Status.ACTIVE_SESSION)
+        rbCards?.refreshMedia()
         reportBringUpOwner()
         // Cancel, the progress bar and the step come and go with the status, so the lines that fit
         // change with it, not only with the layout.
