@@ -132,7 +132,12 @@ class RoundaboutCards(private val root: View) {
             background = ContextCompat.getDrawable(ctx, R.drawable.rb_btn_primary)
             setTextColor(ContextCompat.getColor(ctx, R.color.rb_on_accent))
             contentDescription?.let { if (text.toString() != it.toString()) text = it }
-            val mark = ContextCompat.getDrawable(ctx, R.drawable.rb_ic_aa)
+            // outline mark on the orange pill -> dark ink, same as the label
+            val mark = ContextCompat.getDrawable(ctx, R.drawable.rb_ic_aa)?.mutate()?.let {
+                androidx.core.graphics.drawable.DrawableCompat.wrap(it).also { d ->
+                    androidx.core.graphics.drawable.DrawableCompat.setTint(d, ContextCompat.getColor(ctx, R.color.rb_on_accent))
+                }
+            }
             val px = (32 * resources.displayMetrics.density).toInt()
             mark?.setBounds(0, 0, px, px)
             setCompoundDrawables(mark, null, null, null)
