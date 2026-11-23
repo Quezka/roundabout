@@ -11,6 +11,7 @@ object RoundaboutSetup {
     private const val TEXTURE_V3 = "rb-texture-view-v3"
     private const val MEDIA_SYNC_V4 = "rb-media-sync-v4"
     private const val NO_FORCED_SCALE_V5 = "rb-no-forced-scale-v5"
+    private const val NO_LOCK_HOLD_V6 = "rb-no-lock-hold-v6"
 
     fun migrate(context: Context, settings: Settings) {
         val prefs = context.getSharedPreferences(Settings.PREFS_NAME, Context.MODE_PRIVATE)
@@ -18,6 +19,11 @@ object RoundaboutSetup {
         if (!prefs.getBoolean(MEDIA_SYNC_V4, false)) {
             settings.syncMediaSessionWithAaMetadata = true
             prefs.edit().putBoolean(MEDIA_SYNC_V4, true).apply()
+        }
+        // no lock screen here (systemui off) ; keyguard state reads "locked" -> input hold blocks aa
+        if (!prefs.getBoolean(NO_LOCK_HOLD_V6, false)) {
+            settings.showOverLockScreen = false
+            prefs.edit().putBoolean(NO_LOCK_HOLD_V6, true).apply()
         }
         // forced scale stretches the whole frame while the phone keeps a margin for the rail -> offset
         if (!prefs.getBoolean(NO_FORCED_SCALE_V5, false)) {

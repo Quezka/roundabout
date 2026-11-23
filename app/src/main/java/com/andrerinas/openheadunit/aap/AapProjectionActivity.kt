@@ -1394,6 +1394,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     override fun onPause() {
+        com.andrerinas.openheadunit.roundabout.RoundaboutBus.projectionMenu = null
         clearTwoFingerTracking()
         isForeground = false
         AppLog.i("AapProjectionActivity: onPause")
@@ -1464,6 +1465,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     override fun onResume() {
+        // roundabout rail menu button -> this exit menu
+        com.andrerinas.openheadunit.roundabout.RoundaboutBus.projectionMenu = { showExitDialog() }
         super.onResume()
         isForeground = true
         userLeftDeliberately = false
@@ -1954,6 +1957,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     private fun showExitDialog() {
+        AppLog.i("AapProjectionActivity: exit menu asked, locked=${LockedInputPolicy.engaged}")
         // Its entries (stop, settings, background) are not for a locked unit.
         if (LockedInputPolicy.engaged) return
         // Copy the live configuration: a blank one resets the font scale on API 17-23.
@@ -2014,7 +2018,10 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                 isFocusable = true
                 contentDescription = label
                 addView(android.widget.ImageView(context).apply {
-                    setImageResource(option.iconResId)
+                    setImageResource(
+                        if (option.titleResId == R.string.exit_dialog_background && homeApp) R.drawable.rb_ic_home
+                        else option.iconResId
+                    )
                     setColorFilter(if (stop) Color.rgb(0xFF, 0x6B, 0x5E) else Color.rgb(0xF2, 0xF3, 0xF5))
                     importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                 }, android.widget.LinearLayout.LayoutParams((40 * density).toInt(), (40 * density).toInt()))

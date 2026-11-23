@@ -538,11 +538,13 @@ class RoundaboutRailService : Service() {
     // --- actions ---
 
     private fun onContextButton() {
+        com.andrerinas.openheadunit.utils.AppLog.i("RoundaboutRail: context button, place=$place, menu=${RoundaboutBus.projectionMenu != null}")
         when (place) {
             Place.HOME -> { RoundaboutBus.openDrawer = true; openHome() }
-            Place.PROJECTION -> startActivity(Intent(this, AapProjectionActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                .putExtra(EXTRA_EXIT_MENU, true))
+            Place.PROJECTION -> RoundaboutBus.projectionMenu?.invoke()
+                ?: startActivity(Intent(this, AapProjectionActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra(EXTRA_EXIT_MENU, true))
             Place.OURS, Place.OTHER -> if (!NavAccessibility.back()) openAccessibilitySettings()
         }
     }

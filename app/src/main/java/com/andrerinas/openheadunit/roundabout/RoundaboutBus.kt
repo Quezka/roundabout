@@ -8,4 +8,6 @@ object RoundaboutBus {
     @Volatile var pickFavoriteSlot: Int? = null
     // open the app drawer
     @Volatile var openDrawer = false
+    // set by the projection while resumed ; rail menu button calls it
+    @Volatile var projectionMenu: (() -> Unit)? = null
 }

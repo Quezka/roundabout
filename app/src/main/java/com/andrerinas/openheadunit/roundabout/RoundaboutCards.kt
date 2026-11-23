@@ -137,11 +137,11 @@ class RoundaboutCards(private val root: View) {
         root.findViewById<View>(R.id.home_primary_icon_tile)?.apply {
             visibility = View.VISIBLE
             background = null
-            val px = (64 * density).toInt()
+            val px = (52 * density).toInt()
             layoutParams?.let { if (it.width != px) { it.width = px; it.height = px; layoutParams = it } }
         }
         root.findViewById<View>(R.id.home_primary_icon)?.apply {
-            val px = (60 * density).toInt()
+            val px = (48 * density).toInt()
             layoutParams?.let { if (it.width != px) { it.width = px; it.height = px; layoutParams = it } }
         }
         root.findViewById<ImageView>(R.id.home_primary_icon)?.apply {
@@ -170,6 +170,11 @@ class RoundaboutCards(private val root: View) {
             compoundDrawablePadding = (12 * resources.displayMetrics.density).toInt()
             typeface = androidx.core.content.res.ResourcesCompat.getFont(ctx, R.font.manrope_bold)
         }
+        // progress in the accent, not the connection colour
+        val r = 3 * ctx.resources.displayMetrics.density
+        fun pill(c: Int) = android.graphics.drawable.GradientDrawable().apply { setColor(ContextCompat.getColor(ctx, c)); cornerRadius = r }
+        root.findViewById<View>(R.id.home_primary_progress)?.background = pill(R.color.rb_container_highest)
+        root.findViewById<View>(R.id.home_primary_progress_fill)?.background = pill(R.color.rb_accent)
         // room between the progress bar and the buttons
         root.findViewById<View>(R.id.home_primary_actions)?.let { actions ->
             (actions.layoutParams as? android.view.ViewGroup.MarginLayoutParams)?.let { lp ->
