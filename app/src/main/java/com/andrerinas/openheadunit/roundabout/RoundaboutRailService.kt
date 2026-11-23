@@ -1,7 +1,6 @@
 package com.andrerinas.openheadunit.roundabout
 
 import android.app.Activity
-import android.app.Application
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -21,7 +20,6 @@ import android.graphics.drawable.GradientDrawable
 import android.media.AudioManager
 import android.os.BatteryManager
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -80,20 +78,11 @@ class RoundaboutRailService : Service() {
     private var volumeText: TextView? = null
     private val hideVolume = Runnable { volumePanel?.visibility = View.GONE }
 
-    private var ourTop: Activity? = null
+    private val ourTop: Activity? get() = resumed?.get()
     private var lastVolume = -1
     private var place = Place.OTHER
     private var live = false
 
-    private val lifecycle = object : Application.ActivityLifecycleCallbacks {
-        override fun onActivityResumed(a: Activity) { ourTop = a; renderPlace() }
-        override fun onActivityPaused(a: Activity) { if (ourTop === a) ourTop = null; main.postDelayed({ renderPlace() }, 300) }
-        override fun onActivityCreated(a: Activity, b: Bundle?) {}
-        override fun onActivityStarted(a: Activity) {}
-        override fun onActivityStopped(a: Activity) {}
-        override fun onActivitySaveInstanceState(a: Activity, b: Bundle) {}
-        override fun onActivityDestroyed(a: Activity) {}
-    }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context, i: Intent) {
@@ -129,7 +118,7 @@ class RoundaboutRailService : Service() {
             stopSelf()
             return
         }
-        (application as Application).registerActivityLifecycleCallbacks(lifecycle)
+        instance = this
         registerReceiver(receiver, IntentFilter().apply {
             addAction(Intent.ACTION_BATTERY_CHANGED)
             addAction(VOLUME_CHANGED)
@@ -152,7 +141,7 @@ class RoundaboutRailService : Service() {
         scope.cancel()
         main.removeCallbacksAndMessages(null)
         try { unregisterReceiver(receiver) } catch (e: Exception) { }
-        try { (application as Application).unregisterActivityLifecycleCallbacks(lifecycle) } catch (e: Exception) { }
+        if (instance === this) instance = null
         getSharedPreferences(Settings.PREFS_NAME, MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(prefsListener)
         windows.forEach { try { wm.removeView(it) } catch (e: Exception) { } }
         windows.clear()
@@ -182,9 +171,31 @@ class RoundaboutRailService : Service() {
         this.y = y
     }
 
-    // overlay coords = relative to the overscan frame -> measure the real spot, shift once
+    private data class Pinned(val v: View, val lp: WindowManager.LayoutParams, val x: Int, val y: Int)
+    private val pinned = mutableListOf<Pinned>()
+    // wm moves overlays on rotation / overscan changes -> check spots every 2 s
+    private val repin = object : Runnable {
+        override fun run() {
+            pinned.forEach { place(it.v, it.lp, it.x, it.y) }
+            main.postDelayed(this, 2000)
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        main.postDelayed({ pinned.forEach { place(it.v, it.lp, it.x, it.y) } }, 300)
+    }
+
+    // overlay coords = relative to the overscan frame -> measure the real spot, shift
     private fun pin(v: View, lp: WindowManager.LayoutParams, wantX: Int, wantY: Int) {
+        pinned += Pinned(v, lp, wantX, wantY)
+        if (pinned.size == 1) main.postDelayed(repin, 2000)
+        place(v, lp, wantX, wantY)
+    }
+
+    private fun place(v: View, lp: WindowManager.LayoutParams, wantX: Int, wantY: Int) {
         v.post {
+            if (v.windowToken == null) return@post
             val loc = IntArray(2)
             v.getLocationOnScreen(loc)
             val dx = wantX - loc[0]
@@ -251,18 +262,22 @@ class RoundaboutRailService : Service() {
         apps = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL }
         panel.addView(apps, LinearLayout.LayoutParams(-1, 0, 1f).apply { topMargin = dp(4f) })
 
+        val gear = ImageView(this).apply { setImageResource(R.drawable.ic_settings_white); setColorFilter(color(R.color.rb_text)) }
+        panel.addView(button(gear, R.drawable.rb_rail_btn) { openSettings() }.also {
+            it.contentDescription = getString(R.string.settings)
+        })
         contextIcon = ImageView(this)
         contextButton = button(contextIcon, R.drawable.rb_rail_btn) { onContextButton() }
-        panel.addView(contextButton)
+        panel.addView(contextButton.also { (it.layoutParams as LinearLayout.LayoutParams).topMargin = dp(6f) })
         val volIcon = ImageView(this).apply { setImageResource(R.drawable.rb_ic_volume); setColorFilter(color(R.color.rb_text)) }
         panel.addView(button(volIcon, R.drawable.rb_rail_btn) { toggleVolume() }.also {
             it.contentDescription = getString(R.string.rb_volume)
-            (it.layoutParams as LinearLayout.LayoutParams).topMargin = dp(8f)
+            (it.layoutParams as LinearLayout.LayoutParams).topMargin = dp(6f)
         })
-        val homeIcon = ImageView(this).apply { setImageResource(R.drawable.rb_ic_dashboard); setColorFilter(color(R.color.rb_on_accent)) }
+        val homeIcon = ImageView(this).apply { setImageResource(R.drawable.rb_ic_home); setColorFilter(color(R.color.rb_on_accent)) }
         panel.addView(button(homeIcon, R.drawable.rb_rail_btn_accent) { openHome() }.also {
             it.contentDescription = getString(R.string.rb_exit_home)
-            (it.layoutParams as LinearLayout.LayoutParams).topMargin = dp(8f)
+            (it.layoutParams as LinearLayout.LayoutParams).topMargin = dp(6f)
         })
         renderPlace()
 
@@ -281,7 +296,7 @@ class RoundaboutRailService : Service() {
         setOnClickListener { onClick() }
         icon.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
         addView(icon, FrameLayout.LayoutParams(dp(28f), dp(28f), Gravity.CENTER))
-        layoutParams = LinearLayout.LayoutParams(dp(72f), dp(54f))
+        layoutParams = LinearLayout.LayoutParams(dp(72f), dp(48f))
     }
 
     // rounded corners of the app area, as on the home cards
@@ -448,7 +463,7 @@ class RoundaboutRailService : Service() {
                     setColorFilter(color(R.color.rb_muted))
                 }, FrameLayout.LayoutParams(dp(26f), dp(26f), Gravity.CENTER))
             }
-            apps.addView(cell, LinearLayout.LayoutParams(dp(60f), dp(56f)).apply { topMargin = dp(4f) })
+            apps.addView(cell, LinearLayout.LayoutParams(dp(60f), dp(52f)).apply { topMargin = dp(2f) })
         }
     }
 
@@ -504,6 +519,11 @@ class RoundaboutRailService : Service() {
         })
     }
 
+    private fun openSettings() {
+        hideVolume.run()
+        startActivity(Intent(this, com.andrerinas.openheadunit.main.SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
     private fun openAccessibilitySettings() {
         try {
             startActivity(Intent(AndroidSettings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -538,6 +558,15 @@ class RoundaboutRailService : Service() {
 
         @Volatile var running = false
             private set
+        @Volatile private var instance: RoundaboutRailService? = null
+        // own resumed activity <- App lifecycle callbacks (also before the service exists)
+        @Volatile private var resumed: java.lang.ref.WeakReference<Activity>? = null
+
+        fun onOurActivity(now: Activity?, paused: Activity? = null) {
+            if (now != null) resumed = java.lang.ref.WeakReference(now)
+            else if (resumed?.get() === paused) resumed = null
+            instance?.let { s -> s.main.postDelayed({ s.renderPlace() }, if (now != null) 0L else 300L) }
+        }
 
         private fun dp(c: Context, v: Float): Int =
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, c.resources.displayMetrics).toInt()

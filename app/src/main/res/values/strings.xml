@@ -1995,5 +1995,9 @@
     <string name="rb_add_app">Add app</string>
     <string name="rb_exit_home">Home</string>
     <string name="rb_volume">Volume</string>
+    <string name="rb_widget_pick">Dial</string>
+    <string name="rb_widget_speed">Speedometer</string>
+    <string name="rb_widget_analog">Clock</string>
+    <string name="rb_widget_digital">Digital clock</string>
     <string name="rb_accessibility_description">Lets the Roundabout rail go back in any app and highlight the app you are using.</string>
 </resources>

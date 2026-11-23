@@ -264,9 +264,6 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rbCards = com.andrerinas.openheadunit.roundabout.RoundaboutCards(view)
-        view.findViewById<View>(R.id.rb_drive_settings)?.setOnClickListener {
-            startActivity(Intent(requireContext(), SettingsActivity::class.java))
-        }
         rbRail = com.andrerinas.openheadunit.roundabout.RoundaboutRail(
             view,
             onAndroidAuto = { onAndroidAutoClicked() },

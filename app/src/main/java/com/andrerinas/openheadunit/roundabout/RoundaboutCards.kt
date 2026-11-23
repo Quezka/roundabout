@@ -27,6 +27,8 @@ class RoundaboutCards(private val root: View) {
 
     init {
         gauge?.unit = ctx.getString(R.string.rb_speed_unit)
+        gauge?.mode = loadWidget()
+        drive?.findViewById<View>(R.id.rb_drive_widget)?.setOnClickListener { pickWidget(it) }
         media?.let { m ->
             m.findViewById<View>(R.id.rb_media_prev)?.setOnClickListener { watcher.send(MediaAction.PREVIOUS) }
             m.findViewById<View>(R.id.rb_media_toggle)?.setOnClickListener { watcher.send(MediaAction.TOGGLE) }
@@ -155,6 +157,36 @@ class RoundaboutCards(private val root: View) {
         }
     }
 
+    // drive card dial: speedometer | analog clock | digital clock ; kept in settings prefs
+    private fun prefs() = ctx.getSharedPreferences(com.andrerinas.openheadunit.utils.Settings.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+
+    private fun loadWidget(): SpeedGaugeView.Mode =
+        try { SpeedGaugeView.Mode.valueOf(prefs().getString(WIDGET_KEY, null) ?: "SPEED") } catch (e: Exception) { SpeedGaugeView.Mode.SPEED }
+
+    private fun pickWidget(anchor: View) {
+        val choices = listOf(
+            SpeedGaugeView.Mode.SPEED to R.string.rb_widget_speed,
+            SpeedGaugeView.Mode.ANALOG_CLOCK to R.string.rb_widget_analog,
+            SpeedGaugeView.Mode.DIGITAL_CLOCK to R.string.rb_widget_digital,
+        )
+        android.widget.PopupMenu(ctx, anchor).apply {
+            choices.forEachIndexed { i, (mode, label) ->
+                menu.add(0, i, i, label).apply {
+                    isCheckable = true
+                    isChecked = gauge?.mode == mode
+                }
+            }
+            menu.setGroupCheckable(0, true, true)
+            setOnMenuItemClickListener { item ->
+                val mode = choices[item.itemId].first
+                gauge?.mode = mode
+                prefs().edit().putString(WIDGET_KEY, mode.name).apply()
+                true
+            }
+            show()
+        }
+    }
+
     private fun openPlayer() {
         val pkg = state.packageName ?: return
         val intent = ctx.packageManager.getLaunchIntentForPackage(pkg) ?: return
@@ -169,5 +201,9 @@ class RoundaboutCards(private val root: View) {
         } catch (e: ActivityNotFoundException) {
             ctx.startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
+    }
+
+    companion object {
+        private const val WIDGET_KEY = "rb-drive-widget"
     }
 }

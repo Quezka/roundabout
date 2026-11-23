@@ -203,8 +203,12 @@ class App : Application(), Application.ActivityLifecycleCallbacks {
             FloatingButtonManager.onAppForegroundChanged(this, isForeground = true)
         }
     }
-    override fun onActivityResumed(activity: Activity) {}
-    override fun onActivityPaused(activity: Activity) {}
+    override fun onActivityResumed(activity: Activity) {
+        com.andrerinas.openheadunit.roundabout.RoundaboutRailService.onOurActivity(activity)
+    }
+    override fun onActivityPaused(activity: Activity) {
+        com.andrerinas.openheadunit.roundabout.RoundaboutRailService.onOurActivity(null, activity)
+    }
     override fun onActivityStopped(activity: Activity) {
         startedActivityCount--
         if (startedActivityCount <= 0) {

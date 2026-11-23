@@ -39,15 +39,15 @@
             android:textColor="@color/rb_muted"
             android:textSize="16sp" />
 
-        <!-- settings: rail has no gear now (always-on rail, per-screen buttons) -->
+        <!-- what the dial shows: speedometer | clocks -->
         <FrameLayout
-            android:id="@+id/rb_drive_settings"
+            android:id="@+id/rb_drive_widget"
             android:layout_width="64dp"
             android:layout_height="52dp"
             android:layout_marginTop="14dp"
             android:background="@drawable/rb_rail_btn"
             android:clickable="true"
-            android:contentDescription="@string/settings"
+            android:contentDescription="@string/rb_widget_pick"
             android:focusable="true">
 
             <ImageView
@@ -55,7 +55,7 @@
                 android:layout_height="26dp"
                 android:layout_gravity="center"
                 android:importantForAccessibility="no"
-                android:src="@drawable/ic_settings_white"
+                android:src="@drawable/rb_ic_tune"
                 android:tint="@color/rb_text" />
         </FrameLayout>
     </LinearLayout>
