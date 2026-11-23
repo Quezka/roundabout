@@ -118,6 +118,7 @@
 
         <activity
             android:name=".aap.AapProjectionActivity"
+            android:screenOrientation="landscape"
             android:allowEmbedded="true"
             android:configChanges="uiMode|orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
@@ -246,6 +247,7 @@
 
         <activity
             android:name=".main.SettingsActivity"
+            android:screenOrientation="landscape"
             android:label="@string/settings"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:theme="@style/AppTheme" />
@@ -260,6 +262,7 @@
         -->
         <activity
             android:name=".main.OnboardingActivity"
+            android:screenOrientation="landscape"
             android:excludeFromRecents="true"
             android:exported="false"
             android:taskAffinity="${applicationId}.onboarding"
@@ -451,6 +454,7 @@
 
         <activity
             android:name=".main.AutomationActivity"
+            android:screenOrientation="landscape"
             android:excludeFromRecents="true"
             android:exported="true"
             android:noHistory="true"

@@ -21,6 +21,19 @@ class NavAccessibility : AccessibilityService() {
         foreground.value = pkg
     }
 
+    // systemui off => audioservice drops every volume key (no volume ui to show first)
+    // -> keys handled here ; android auto keeps them if the user sends volume to the phone
+    override fun onKeyEvent(event: android.view.KeyEvent): Boolean {
+        val code = event.keyCode
+        if (code != android.view.KeyEvent.KEYCODE_VOLUME_UP && code != android.view.KeyEvent.KEYCODE_VOLUME_DOWN) return false
+        if (com.andrerinas.openheadunit.utils.Settings(this).volumeKeysToPhone &&
+            RoundaboutRailService.projectionOnTop) return false
+        if (event.action == android.view.KeyEvent.ACTION_DOWN) {
+            RoundaboutRailService.volumeStep(this, code == android.view.KeyEvent.KEYCODE_VOLUME_UP)
+        }
+        return true
+    }
+
     override fun onInterrupt() {}
 
     override fun onDestroy() {

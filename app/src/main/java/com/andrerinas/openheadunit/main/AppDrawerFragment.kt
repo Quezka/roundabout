@@ -264,8 +264,8 @@ class AppDrawerFragment : DialogFragment() {
             closeDrawer()
         }
 
-        val screenWidthDp = resources.displayMetrics.widthPixels / resources.displayMetrics.density
-        rvApps.layoutManager = GridLayoutManager(requireContext(), (screenWidthDp / 120).toInt().coerceAtLeast(3))
+        // roundabout: window width (rail strip excluded), ~150dp per tile -> whole names fit
+        rvApps.layoutManager = GridLayoutManager(requireContext(), (resources.configuration.screenWidthDp / 150).coerceAtLeast(3))
 
         val favoriteSlot = arguments?.getInt(ARG_FAVORITE_SLOT, -1) ?: -1
         val pickRequestKey = arguments?.getString(ARG_PICK_REQUEST_KEY)

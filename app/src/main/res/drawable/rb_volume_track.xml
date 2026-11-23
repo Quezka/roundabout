@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- volume slider: thick rounded track, accent fill -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@android:id/background" android:top="18dp" android:bottom="18dp">
+    <item android:id="@android:id/background" android:top="8dp" android:bottom="8dp">
         <shape><solid android:color="@color/rb_container_highest" /><corners android:radius="6dp" /></shape>
     </item>
-    <item android:id="@android:id/progress" android:top="18dp" android:bottom="18dp">
+    <item android:id="@android:id/progress" android:top="8dp" android:bottom="8dp">
         <clip><shape><solid android:color="@color/rb_accent" /><corners android:radius="6dp" /></shape></clip>
     </item>
 </layer-list>

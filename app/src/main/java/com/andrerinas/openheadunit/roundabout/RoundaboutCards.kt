@@ -88,6 +88,11 @@ class RoundaboutCards(private val root: View) {
                 artist?.visibility = View.GONE
             }
         }
+        // nothing to control -> controls dimmed, not looking live
+        val controls = if (s.hasMedia) 1f else 0.35f
+        listOf(R.id.rb_media_prev, R.id.rb_media_toggle, R.id.rb_media_next).forEach { id ->
+            m.findViewById<View>(id)?.let { it.alpha = controls; it.isEnabled = s.hasMedia }
+        }
         m.findViewById<ImageView>(R.id.rb_media_toggle_icon)
             ?.setImageResource(if (s.playing) R.drawable.rb_ic_pause else R.drawable.rb_ic_play)
         m.findViewById<View>(R.id.rb_media_toggle)?.contentDescription =
@@ -164,6 +169,13 @@ class RoundaboutCards(private val root: View) {
             setCompoundDrawables(mark, null, null, null)
             compoundDrawablePadding = (12 * resources.displayMetrics.density).toInt()
             typeface = androidx.core.content.res.ResourcesCompat.getFont(ctx, R.font.manrope_bold)
+        }
+        // room between the progress bar and the buttons
+        root.findViewById<View>(R.id.home_primary_actions)?.let { actions ->
+            (actions.layoutParams as? android.view.ViewGroup.MarginLayoutParams)?.let { lp ->
+                val gap = (14 * ctx.resources.displayMetrics.density).toInt()
+                if (lp.topMargin != gap) { lp.topMargin = gap; actions.layoutParams = lp }
+            }
         }
         root.findViewById<TextView>(R.id.home_primary_cancel)?.apply {
             background = ContextCompat.getDrawable(ctx, R.drawable.rb_btn_tonal)

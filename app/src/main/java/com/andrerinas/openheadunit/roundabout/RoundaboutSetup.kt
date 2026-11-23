@@ -10,6 +10,7 @@ object RoundaboutSetup {
     private const val INSET_V2 = "rb-rail-overscan-v2"
     private const val TEXTURE_V3 = "rb-texture-view-v3"
     private const val MEDIA_SYNC_V4 = "rb-media-sync-v4"
+    private const val NO_FORCED_SCALE_V5 = "rb-no-forced-scale-v5"
 
     fun migrate(context: Context, settings: Settings) {
         val prefs = context.getSharedPreferences(Settings.PREFS_NAME, Context.MODE_PRIVATE)
@@ -17,6 +18,11 @@ object RoundaboutSetup {
         if (!prefs.getBoolean(MEDIA_SYNC_V4, false)) {
             settings.syncMediaSessionWithAaMetadata = true
             prefs.edit().putBoolean(MEDIA_SYNC_V4, true).apply()
+        }
+        // forced scale stretches the whole frame while the phone keeps a margin for the rail -> offset
+        if (!prefs.getBoolean(NO_FORCED_SCALE_V5, false)) {
+            settings.forcedScale = false
+            prefs.edit().putBoolean(NO_FORCED_SCALE_V5, true).apply()
         }
         // surfaceview lands one overscan strip too far right (5.x) -> textureview
         if (!prefs.getBoolean(TEXTURE_V3, false)) {

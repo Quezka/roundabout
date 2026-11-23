@@ -7,9 +7,9 @@
     android:layout_margin="6dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="?attr/colorSurfaceVariant"
-    app:cardCornerRadius="32dp"
-    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/rb_card"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="0dp"
     app:strokeWidth="0dp">
 
     <LinearLayout
@@ -17,7 +17,10 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="14dp">
 
         <FrameLayout
             android:layout_width="wrap_content"
@@ -25,8 +28,8 @@
 
             <ImageView
                 android:id="@+id/iv_app_icon"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
                 android:contentDescription="@null"
                 tools:src="@mipmap/ic_launcher" />
 
@@ -44,13 +47,13 @@
             android:id="@+id/tv_app_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:ellipsize="end"
+            android:fontFamily="@font/manrope_semibold"
             android:gravity="center"
             android:maxLines="1"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            android:textColor="@color/rb_text"
+            android:textSize="16sp"
             tools:text="App Name" />
 
     </LinearLayout>

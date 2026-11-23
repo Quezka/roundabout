@@ -287,7 +287,7 @@ object HeadUnitScreenConfig {
             realH = size.y
             @Suppress("DEPRECATION")
             display.getSize(size)
-            usableW = (if (immersive) realW else size.x) - left - right
+            usableW = (if (immersive) realW else size.x - rail) - left - right
             usableH = (if (immersive) realH else size.y) - top - bottom
         }
 

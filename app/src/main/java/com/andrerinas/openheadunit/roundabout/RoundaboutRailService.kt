@@ -76,6 +76,8 @@ class RoundaboutRailService : Service() {
     private var volumePanel: View? = null
     private var volumeBar: SeekBar? = null
     private var volumeText: TextView? = null
+    private var brightBar: SeekBar? = null
+    private var brightText: TextView? = null
     private val hideVolume = Runnable { volumePanel?.visibility = View.GONE }
 
     private val ourTop: Activity? get() = resumed?.get()
@@ -152,7 +154,13 @@ class RoundaboutRailService : Service() {
 
     private fun dp(v: Float): Int = dp(this, v)
 
-    private fun screen(): Point = Point().also { wm.defaultDisplay.getRealSize(it) }
+    // landscape always (rotation locked) ; service may start while still portrait -> sort sides
+    private fun screen(): Point = Point().also {
+        wm.defaultDisplay.getRealSize(it)
+        val long = maxOf(it.x, it.y)
+        val short = minOf(it.x, it.y)
+        it.set(long, short)
+    }
 
     @Suppress("DEPRECATION")
     private fun overlayParams(w: Int, h: Int, x: Int, y: Int, touchable: Boolean) = WindowManager.LayoutParams(
@@ -213,7 +221,8 @@ class RoundaboutRailService : Service() {
     private fun addRail() {
         val s = screen()
         val width = railPx(this)
-        val root = FrameLayout(this).apply { setBackgroundColor(color(R.color.splash_background)) }
+        // strip + corners = black, same as the app windows beside them
+        val root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
         val panel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
@@ -308,7 +317,7 @@ class RoundaboutRailService : Service() {
             Triple(left, 0, 0), Triple(s.x - r, 0, 1),
             Triple(left, s.y - r, 2), Triple(s.x - r, s.y - r, 3),
         ).forEach { (x, y, which) ->
-            val v = CornerView(this, which, color(R.color.splash_background))
+            val v = CornerView(this, which, Color.BLACK)
             val lp = overlayParams(r, r, x, y, touchable = false)
             wm.addView(v, lp)
             windows += v
@@ -316,60 +325,94 @@ class RoundaboutRailService : Service() {
         }
     }
 
+    // volume + brightness ; opens from the rail, a volume key or a volume change ; hides by itself
     private fun addVolumePanel() {
         val s = screen()
-        val w = dp(460f)
-        val h = dp(88f)
+        val w = dp(480f)
+        val h = dp(150f)
         val root = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
+            orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_VERTICAL
             background = GradientDrawable().apply {
                 setColor(color(R.color.rb_container_high))
                 cornerRadius = dp(28f).toFloat()
             }
-            setPadding(dp(22f), 0, dp(22f), 0)
+            setPadding(dp(22f), dp(10f), dp(22f), dp(10f))
             visibility = View.GONE
         }
-        root.addView(ImageView(this).apply {
-            setImageResource(R.drawable.rb_ic_volume)
-            setColorFilter(color(R.color.rb_text))
-        }, LinearLayout.LayoutParams(dp(30f), dp(30f)))
-        val bar = SeekBar(this).apply {
-            max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-            progressDrawable = ContextCompat.getDrawable(context, R.drawable.rb_volume_track)
-            thumb = ContextCompat.getDrawable(context, R.drawable.rb_volume_thumb)
-            splitTrack = false
-            setPadding(dp(18f), 0, dp(18f), 0)
-            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(sb: SeekBar, value: Int, fromUser: Boolean) {
-                    volumeText?.text = percent(value)
-                    if (!fromUser) return
-                    lastVolume = value
-                    audio.setStreamVolume(AudioManager.STREAM_MUSIC, value, 0)
-                    keepVolume()
-                }
-                override fun onStartTrackingTouch(sb: SeekBar) { main.removeCallbacks(hideVolume) }
-                override fun onStopTrackingTouch(sb: SeekBar) { keepVolume() }
-            })
+        val vol = sliderRow(root, R.drawable.rb_ic_volume, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)) { value ->
+            lastVolume = value
+            audio.setStreamVolume(AudioManager.STREAM_MUSIC, value, 0)
+            percent(value)
         }
-        root.addView(bar, LinearLayout.LayoutParams(0, dp(48f), 1f))
+        val light = sliderRow(root, R.drawable.rb_ic_brightness, 255 - MIN_BRIGHTNESS) { value ->
+            setBrightness(value + MIN_BRIGHTNESS)
+            "${value * 100 / (255 - MIN_BRIGHTNESS)}%"
+        }
+        val left = railPx(this)
+        val x = left + (s.x - left - w) / 2
+        val y = s.y - h - dp(24f)
+        val lp = overlayParams(w, h, x, y, touchable = true)
+        wm.addView(root, lp)
+        windows += root
+        pin(root, lp, x, y)
+        volumePanel = root
+        volumeBar = vol.first
+        volumeText = vol.second
+        brightBar = light.first
+        brightText = light.second
+    }
+
+    private fun sliderRow(parent: LinearLayout, icon: Int, max: Int, onUser: (Int) -> String): Pair<SeekBar, TextView> {
+        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        row.addView(ImageView(this).apply {
+            setImageResource(icon)
+            setColorFilter(color(R.color.rb_text))
+        }, LinearLayout.LayoutParams(dp(28f), dp(28f)))
         val text = TextView(this).apply {
             setTextColor(color(R.color.rb_text))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
             typeface = font ?: Typeface.DEFAULT_BOLD
             gravity = Gravity.END or Gravity.CENTER_VERTICAL
         }
-        root.addView(text, LinearLayout.LayoutParams(dp(58f), -2))
-        val left = railPx(this)
-        val x = left + (s.x - left - w) / 2
-        val y = s.y - h - dp(28f)
-        val lp = overlayParams(w, h, x, y, touchable = true)
-        wm.addView(root, lp)
-        windows += root
-        pin(root, lp, x, y)
-        volumePanel = root
-        volumeBar = bar
-        volumeText = text
+        val bar = SeekBar(this).apply {
+            this.max = max
+            progressDrawable = ContextCompat.getDrawable(context, R.drawable.rb_volume_track)
+            thumb = ContextCompat.getDrawable(context, R.drawable.rb_volume_thumb)
+            splitTrack = false
+            setPadding(dp(18f), 0, dp(18f), 0)
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(sb: SeekBar, value: Int, fromUser: Boolean) {
+                    if (fromUser) { text.text = onUser(value); keepVolume() }
+                }
+                override fun onStartTrackingTouch(sb: SeekBar) { main.removeCallbacks(hideVolume) }
+                override fun onStopTrackingTouch(sb: SeekBar) { keepVolume() }
+            })
+        }
+        // bar height = thumb height ; track inset 8dp each side => knob + track share one centre
+        row.addView(bar, LinearLayout.LayoutParams(0, dp(28f), 1f))
+        row.addView(text, LinearLayout.LayoutParams(dp(58f), -2))
+        parent.addView(row, LinearLayout.LayoutParams(-1, 0, 1f))
+        return bar to text
+    }
+
+    private fun brightness(): Int = try {
+        AndroidSettings.System.getInt(contentResolver, AndroidSettings.System.SCREEN_BRIGHTNESS)
+    } catch (e: Exception) { 180 }
+
+    private fun setBrightness(value: Int) {
+        try {
+            AndroidSettings.System.putInt(contentResolver, AndroidSettings.System.SCREEN_BRIGHTNESS_MODE,
+                AndroidSettings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
+            AndroidSettings.System.putInt(contentResolver, AndroidSettings.System.SCREEN_BRIGHTNESS, value.coerceIn(MIN_BRIGHTNESS, 255))
+        } catch (e: Exception) { }
+    }
+
+    // one key press = one step of music volume ; panel shows the result
+    fun step(up: Boolean) {
+        audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+            if (up) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER, 0)
+        showVolume()
     }
 
     // --- state ---
@@ -384,6 +427,9 @@ class RoundaboutRailService : Service() {
         lastVolume = v
         volumeBar?.progress = v
         volumeText?.text = percent(v)
+        val b = (brightness() - MIN_BRIGHTNESS).coerceAtLeast(0)
+        brightBar?.progress = b
+        brightText?.text = "${b * 100 / (255 - MIN_BRIGHTNESS)}%"
         volumePanel?.visibility = View.VISIBLE
         keepVolume()
     }
@@ -555,6 +601,18 @@ class RoundaboutRailService : Service() {
         private const val VOLUME_CHANGED = "android.media.VOLUME_CHANGED_ACTION"
         private const val EXTRA_STREAM = "android.media.EXTRA_VOLUME_STREAM_TYPE"
         const val EXTRA_EXIT_MENU = "rb_exit_menu"
+        private const val MIN_BRIGHTNESS = 10
+        private const val OVERSCAN_KEY = "rb-overscan-applied"
+
+        val projectionOnTop: Boolean get() = resumed?.get() is AapProjectionActivity
+
+        // volume key from NavAccessibility ; no rail running -> plain step
+        fun volumeStep(context: Context, up: Boolean) {
+            val s = instance
+            if (s != null) { s.main.post { s.step(up) }; return }
+            (context.getSystemService(AUDIO_SERVICE) as AudioManager).adjustStreamVolume(
+                AudioManager.STREAM_MUSIC, if (up) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER, 0)
+        }
 
         @Volatile var running = false
             private set
@@ -589,9 +647,13 @@ class RoundaboutRailService : Service() {
                 // portrait (boot, before landscape lock) -> keep what is set
                 else -> return
             }
+            // su once per spec <- each su call = magisk toast ; overscan survives reboots
+            val prefs = context.getSharedPreferences(Settings.PREFS_NAME, Context.MODE_PRIVATE)
+            if (prefs.getString(OVERSCAN_KEY, null) == spec) return
             Thread {
                 try {
-                    Runtime.getRuntime().exec(arrayOf("su", "-c", "wm overscan $spec")).waitFor()
+                    val ok = Runtime.getRuntime().exec(arrayOf("su", "-c", "wm overscan $spec")).waitFor() == 0
+                    if (ok) prefs.edit().putString(OVERSCAN_KEY, spec).apply()
                 } catch (e: Exception) { }
             }.start()
         }
