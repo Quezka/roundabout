@@ -56,6 +56,7 @@ class SetupActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT < 21) { finishSetup(); return }
+        running = true
         ui = RbUi(this)
         settings = Settings(this)
         safetyAccepted = settings.hasAcceptedDisclaimer
@@ -72,6 +73,7 @@ class SetupActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
+        running = false
         panel?.stop()
         super.onDestroy()
     }
@@ -194,19 +196,24 @@ class SetupActivity : BaseActivity() {
             adjustViewBounds = true
             scaleType = ImageView.ScaleType.FIT_CENTER
         }, LinearLayout.LayoutParams(ui.dp(420f), ui.dp(180f)))
-        col.addView(ui.text(getString(R.string.title), 48f, strong = true).apply { setPadding(0, ui.dp(16f), 0, ui.dp(4f)) })
+        col.addView(ui.text(getString(R.string.title), 48f, strong = true).apply { gravity = Gravity.CENTER; setPadding(0, ui.dp(16f), 0, ui.dp(4f)) })
         col.addView(ui.text(getString(R.string.rb_setup_welcome_sub), 22f, muted = true).apply { gravity = Gravity.CENTER })
         return col
     }
 
     private fun auto(content: LinearLayout) {
-        val kinds = listOf(Settings.ConnectionKind.USB_CABLE, Settings.ConnectionKind.WIFI)
-        val sel = kinds.indexOf(settings.primaryConnection).coerceAtLeast(0)
-        content.addView(ui.choice(listOf(getString(R.string.rb_setup_aa_usb), getString(R.string.rb_setup_aa_wireless)), sel) { i ->
-            settings.primaryConnection = kinds[i]
+        // wireless = native aa (bluetooth + wifi direct, no phone app) ; usb stays on as fallback
+        val wireless = Settings.ConnectionMode.WIFI in settings.connectionModes
+        content.addView(ui.choice(listOf(getString(R.string.rb_setup_aa_usb), getString(R.string.rb_setup_aa_wireless)), if (wireless) 1 else 0) { i ->
+            if (i == 1) {
+                settings.connectionModes = setOf(Settings.ConnectionMode.WIFI, Settings.ConnectionMode.USB)
+                settings.wifiConnectionMode = com.andrerinas.openheadunit.connection.wifi.WifiLauncherMode.NATIVE
+            } else {
+                settings.connectionModes = setOf(Settings.ConnectionMode.USB)
+            }
             render()
         })
-        val steps = if (kinds[sel] == Settings.ConnectionKind.USB_CABLE) R.array.rb_setup_aa_usb_steps else R.array.rb_setup_aa_wireless_steps
+        val steps = if (!wireless) R.array.rb_setup_aa_usb_steps else R.array.rb_setup_aa_wireless_steps
         content.addView(ui.header(getString(R.string.rb_setup_on_phone)))
         resources.getStringArray(steps).forEachIndexed { i, line ->
             content.addView(ui.row("${i + 1}.  $line").view)
@@ -247,8 +254,9 @@ class SetupActivity : BaseActivity() {
         val col = ui.vertical().apply { gravity = Gravity.CENTER }
         col.addView(ImageView(this).apply { setImageResource(R.drawable.rb_ic_aa) },
             LinearLayout.LayoutParams(ui.dp(120f), ui.dp(120f)))
-        col.addView(ui.text(getString(R.string.rb_setup_done), 44f, strong = true).apply { setPadding(0, ui.dp(20f), 0, ui.dp(6f)) })
-        col.addView(ui.text(getString(R.string.rb_setup_done_sub), 22f, muted = true).apply { gravity = Gravity.CENTER })
+        col.addView(ui.text(getString(R.string.rb_setup_done), 44f, strong = true).apply { gravity = Gravity.CENTER; setPadding(0, ui.dp(20f), 0, ui.dp(6f)) })
+        val wireless = Settings.ConnectionMode.WIFI in settings.connectionModes
+        col.addView(ui.text(getString(if (wireless) R.string.rb_setup_done_sub_wireless else R.string.rb_setup_done_sub), 22f, muted = true).apply { gravity = Gravity.CENTER })
         return col
     }
 
@@ -267,6 +275,10 @@ class SetupActivity : BaseActivity() {
         private const val KEY = "rb-setup-step"
         const val DONE_KEY = "rb-setup-done"
         private const val DIAL_KEY = "rb-drive-widget"
+
+        // true from create to destroy ; projection yields to it
+        @Volatile var running = false
+            private set
 
         fun needed(context: Context): Boolean =
             !context.getSharedPreferences(Settings.PREFS_NAME, Context.MODE_PRIVATE).getBoolean(DONE_KEY, false)

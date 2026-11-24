@@ -17,6 +17,8 @@ while [ $# -gt 0 ]; do
 done
 a() { "$ADB" -s "$SERIAL" "$@"; }
 sush() { a exec-out su -c "$1"; }
+# stock toolbox = no awk/tar/head ; magisk busybox has them
+BB=/data/adb/magisk/busybox
 
 a wait-for-device
 sush id | grep -q 'uid=0' || { echo "no root on tablet" >&2; exit 1; }
@@ -38,12 +40,15 @@ sush 'pm list packages -f -3' > "$OUT/info/packages-user.txt"
 sush 'pm list packages -d' > "$OUT/info/packages-disabled.txt"
 sush 'ls -lR /system/app /system/priv-app' > "$OUT/info/system-apps.txt"
 sush 'settings list global; echo ---; settings list secure; echo ---; settings list system' > "$OUT/info/settings.txt"
-sush 'tar -cf - /data/adb 2>/dev/null' > "$OUT/data-adb.tar" || true
+sush "$BB tar -cf - /data/adb 2>/dev/null" > "$OUT/data-adb.tar" || true
 
 # partition list: name dev
 # by-name links first ; old mtk (5.x) -> /proc/dumchar_info
 LIST="$OUT/info/list.txt"
-sush 'for d in /dev/block/platform/*/by-name /dev/block/by-name; do [ -d $d ] && for p in $d/*; do echo "${p##*/} $(readlink -f $p)"; done; done 2>/dev/null' | sort -u > "$LIST" || true
+# device script <- su -c quoting breaks globs
+a push "$(dirname "$0")/device-list.sh" /data/local/tmp/rb-list.sh >/dev/null
+sush "sh /data/local/tmp/rb-list.sh" | tr -d '\r' | sort -u > "$LIST" || true
+sush "rm /data/local/tmp/rb-list.sh"
 if [ ! -s "$LIST" ]; then
   awk 'NR>1 && $5 ~ /^\/dev\// {print $1, $5}' "$OUT/info/dumchar_info.txt" > "$LIST"
 fi
@@ -66,8 +71,22 @@ while read -r name dev; do
   (cd "$OUT" && sha256sum "$name.img" >> SHA256SUMS)
 done < "$LIST"
 
+# intel sofia: names = ImcPartIDnnn -> alias by mount point (system, data, cache) via hardlink
+sush 'cat /proc/mounts' > "$OUT/info/mounts.txt"
+for mp in system cache; do
+  link=$(awk -v m="/$mp" '$2==m {print $1}' "$OUT/info/mounts.txt" | head -n1)
+  id=${link##*/}
+  if [ -n "$id" ] && [ -f "$OUT/$id.img" ] && [ ! -e "$OUT/$mp.img" ]; then
+    ln "$OUT/$id.img" "$OUT/$mp.img"
+    echo "$mp $(awk -v n="$id" '$1==n {print $2}' "$LIST")" >> "$LIST"
+    echo "alias $mp.img = $id.img"
+  fi
+done
+
 # second read of the irreplaceable ones -> same sums ?
-for name in nvram nvdata protect1 protect2 proinfo; do
+# mtk names + intel sofia nvm (calibration, imei) ; sofia nvm id = read from mounts
+NVM=$(awk '$2=="/nvm_fs_partition" {print $1}' "$OUT/info/mounts.txt" | sed 's#.*/##')
+for name in nvram nvdata protect1 protect2 proinfo $NVM; do
   [ -f "$OUT/$name.img" ] || continue
   dev=$(awk -v n="$name" '$1==n {print $2}' "$LIST")
   b=$(sush "dd if=$dev bs=1048576 2>/dev/null" | sha256sum | cut -d' ' -f1)

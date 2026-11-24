@@ -2135,9 +2135,10 @@
     </string-array>
     <string-array name="rb_setup_aa_wireless_steps">
         <item>Install Android Auto from the Play Store if it is missing.</item>
-        <item>Pair the phone with this tablet over Bluetooth.</item>
-        <item>Turn on the phone\'s hotspot, or join the same Wi‑Fi as the tablet.</item>
-        <item>Tap the Android Auto button on the rail.</item>
+        <item>Pair the phone with this tablet over Bluetooth (previous step).</item>
+        <item>On the phone, turn on Wireless Android Auto in the Android Auto settings.</item>
+        <item>Get in the car: the phone connects by itself.</item>
     </string-array>
     <string name="rb_sys_tablet_row">Wi‑Fi, Bluetooth, display, sound, time, apps</string>
+    <string name="rb_setup_done_sub_wireless">Your phone connects by itself when you get in the car.</string>
 </resources>

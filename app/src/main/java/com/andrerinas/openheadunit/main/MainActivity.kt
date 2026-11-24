@@ -338,6 +338,8 @@ class MainActivity : BaseActivity() {
         customStatusText: String? = null,
         statusTextIsWakeClaim: Boolean = false
     ) {
+        // roundabout setup first ; android auto after
+        if (com.andrerinas.openheadunit.roundabout.setup.SetupActivity.needed(this)) return
         // The flag is on the companion and the watchdog on this instance's scope, so an attempt
         // can reach here with nothing watching it at all: spend it if it is over, re-arm it if not.
         endAutoConnectIfExpired()

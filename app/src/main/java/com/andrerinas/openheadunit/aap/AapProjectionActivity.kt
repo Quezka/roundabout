@@ -1468,6 +1468,12 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         // roundabout rail menu button -> this exit menu
         com.andrerinas.openheadunit.roundabout.RoundaboutBus.projectionMenu = { showExitDialog() }
         super.onResume()
+        // roundabout setup open -> session stays in background, setup back on top
+        // <- paired phone reconnects by itself while setup runs again
+        if (com.andrerinas.openheadunit.roundabout.setup.SetupActivity.running) {
+            startActivity(Intent(this, com.andrerinas.openheadunit.roundabout.setup.SetupActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
+        }
         isForeground = true
         userLeftDeliberately = false
         // Again here: the setting may have changed in the settings screen.

@@ -19,27 +19,32 @@ IMG="$HERE/out/system.img"
 [ $SURE = 1 ] || { echo "refuse: pass --i-have-a-backup" >&2; exit 1; }
 [ -f "$BACKUP/system.img" ] && [ -f "$BACKUP/SHA256SUMS" ] || { echo "no backup at $BACKUP" >&2; exit 1; }
 (cd "$BACKUP" && sha256sum -c --quiet SHA256SUMS) || { echo "backup sums fail" >&2; exit 1; }
-for p in nvram boot; do [ -f "$BACKUP/$p.img" ] || { echo "backup lacks $p.img" >&2; exit 1; }; done
+[ -s "$BACKUP/info/list.txt" ] || { echo "backup lacks partition list" >&2; exit 1; }
 [ -f "$IMG" ] || { echo "no $IMG: run build.py" >&2; exit 1; }
 [ "$(stat -c %s "$IMG")" = "$(stat -c %s "$BACKUP/system.img")" ] || { echo "size != stock system" >&2; exit 1; }
 
 a() { "$ADB" -s "$SERIAL" "$@"; }
 a wait-for-device
 DEV=$(awk '$1=="system" || $1=="android" {print $2; exit}' "$BACKUP/info/list.txt")
+# sanity: same block dev as the live /system mount
+BB=/data/adb/magisk/busybox
+LIVE=$(a exec-out su -c "$BB readlink -f \$($BB awk '\$2==\"/system\" {print \$1}' /proc/mounts)" | tr -d '\r')
+[ "$LIVE" = "$DEV" ] || { echo "system dev mismatch: backup $DEV live $LIVE" >&2; exit 1; }
 [ -n "$DEV" ] || { echo "no system dev in list.txt" >&2; exit 1; }
 echo "target: $DEV"
 
-# image via sdcard ; system mounted ro => write under it, reboot right after
-a push "$IMG" /sdcard/rb-system.img
+# image via /data/local/tmp (no /sdcard on this tablet) ; system mounted ro => write under it, reboot right after
+TMP=/data/local/tmp/rb-system.img
+a push "$IMG" $TMP
 LOCAL=$(sha256sum "$IMG" | cut -d' ' -f1)
-a exec-out su -c "dd if=/sdcard/rb-system.img of=$DEV bs=1048576 && sync"
+a exec-out su -c "dd if=$TMP of=$DEV bs=1048576 && sync"
 BACK=$(a exec-out su -c "dd if=$DEV bs=1048576 2>/dev/null" | sha256sum | cut -d' ' -f1)
 if [ "$LOCAL" != "$BACK" ]; then
   echo "! read-back differs ; restoring stock system" >&2
-  a push "$BACKUP/system.img" /sdcard/rb-system.img
-  a exec-out su -c "dd if=/sdcard/rb-system.img of=$DEV bs=1048576 && sync"
+  a push "$BACKUP/system.img" $TMP
+  a exec-out su -c "dd if=$TMP of=$DEV bs=1048576 && sync"
   exit 1
 fi
-a shell su -c "rm /sdcard/rb-system.img"
+a shell su -c "rm $TMP"
 echo "flash ok ; rebooting"
 a reboot

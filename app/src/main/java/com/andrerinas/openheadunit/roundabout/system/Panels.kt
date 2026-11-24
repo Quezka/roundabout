@@ -208,7 +208,8 @@ class BluetoothPanel(ui: RbUi) : Panel(ui) {
             if (i.action == BluetoothDevice.ACTION_FOUND) {
                 @Suppress("DEPRECATION")
                 val d = i.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-                if (d != null && d.bondState != BluetoothDevice.BOND_BONDED) found[d.address] = d
+                // nameless = beacons, tags, headless gear -> noise in a phone list
+                if (d != null && d.bondState != BluetoothDevice.BOND_BONDED && !d.name.isNullOrBlank()) found[d.address] = d
             }
             if (i.action == BluetoothAdapter.ACTION_STATE_CHANGED &&
                 i.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0) == BluetoothAdapter.STATE_ON) adapter?.startDiscovery()
@@ -331,10 +332,15 @@ class TimePanel(ui: RbUi) : Panel(ui) {
         })
     }
 
+    // region first, then city a-z <- one list of ~400 zones = no scroll to find
     private fun pickZone() {
-        val ids = zones()
-        ui.pick(s(R.string.rb_sys_zone), ids.map { zoneLabel(it) }) { i ->
-            bg({ SystemAccess.setTimeZone(context, ids[i]) })
+        val byRegion = zones().groupBy { it.substringBefore('/') }
+        val regions = byRegion.keys.sorted()
+        ui.pick(s(R.string.rb_sys_zone), regions) { r ->
+            val ids = byRegion.getValue(regions[r]).sortedBy { it.substringAfter('/') }
+            ui.pick(regions[r], ids.map { zoneLabel(it) }) { i ->
+                bg({ SystemAccess.setTimeZone(context, ids[i]) })
+            }
         }
     }
 

@@ -20,6 +20,8 @@ class AutoStartReceiver : BroadcastReceiver() {
         val targetMacs = Settings.getAutoStartBtMacs(context)
 
         if (targetMacs.isEmpty()) return
+        // roundabout setup open -> no android auto over it
+        if (com.andrerinas.openheadunit.roundabout.setup.SetupActivity.needed(context)) return
         
         val isLocked = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && 
                       !(context.getSystemService(Context.USER_SERVICE) as UserManager).isUserUnlocked

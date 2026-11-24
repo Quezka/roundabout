@@ -98,15 +98,21 @@ def main():
         cmds += rm_tree(img, base)
     cmds += mkdir(base)
     cmds += put(f"{base}/Roundabout.apk", os.path.abspath(a.apk))
+    # abi from the dump: intel sofia = x86 -> lib/x86 ; arm -> lib/arm
+    abi = "x86"
+    gp = os.path.join(a.backup, "info", "getprop.txt")
+    if os.path.exists(gp) and "[ro.product.cpu.abi]: [x86]" not in open(gp).read():
+        abi = "armeabi-v7a"
+    libdir = "x86" if abi == "x86" else "arm"
     with zipfile.ZipFile(a.apk) as z:
-        libs = [n for n in z.namelist() if n.startswith("lib/armeabi-v7a/") and n.endswith(".so")]
+        libs = [n for n in z.namelist() if n.startswith(f"lib/{abi}/") and n.endswith(".so")]
         if libs:
-            cmds += mkdir(f"{base}/lib") + mkdir(f"{base}/lib/arm")
+            cmds += mkdir(f"{base}/lib") + mkdir(f"{base}/lib/{libdir}")
             for n in libs:
                 out = os.path.join(work, os.path.basename(n))
                 with open(out, "wb") as f:
                     f.write(z.read(n))
-                cmds += put(f"{base}/lib/arm/{os.path.basename(n)}", out)
+                cmds += put(f"{base}/lib/{libdir}/{os.path.basename(n)}", out)
     print(f"add {base} + {len(libs)} libs")
 
     if a.bootanim:

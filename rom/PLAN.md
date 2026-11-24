@@ -10,6 +10,14 @@ rom first boot -> roundabout self: overscan + grant listener/accessibility/admin
 signature-only perms (`CLEAR_APP_USER_DATA` ...) -> need platform key ; `ro.build.tags` = `test-keys` ? => sign roundabout w/ aosp platform key + `android.uid.system` ; else su fallback | skip
 root = rom default: boot img = magisk-patched ; magisk app = system app ; superuser toast = none ; only for maintenance
 
+## tablet facts (read 2026-11-24)
+soc = intel atom x3 `Sofia3GR` x86 (not mtk) ; ram `1.4 GB` ; nand `7.3 GB`
+build = `PMT3797_3G.20160509.1.0.02` ; `release-keys` user => no platform key => signature-only perms = su fallback
+partitions = `/dev/block/platform/soc0/e0000000.noc/by-name/ImcPartIDnnn` ; system = `068` (nand0p15, 2 GB) ; data = `069` ; cache = `070` ; nvm = `/nvm_fs_partition`
+no `/sdcard` path ; no awk/head/tar in toolbox -> `/data/adb/magisk/busybox`
+recovery path: intel flash tool | fastboot ? (check `adb reboot bootloader` @ phase 1) ; mtkclient = n/a
+setup + tablet settings = tested @ tablet ok
+
 ## status 2026-11-24
 phase 0 = done ; apk builds ; unit tests `4937` pass ; untested @ tablet
 tablet settings = `roundabout/system/TabletSettingsActivity.kt` + `Panels.kt` + `MorePanels.kt` ; row "Tablet" @ roundabout settings general
@@ -19,7 +27,7 @@ pairing dialog = `roundabout/system/BluetoothPairing.kt`
 scripts: `rom/backup.sh` (read only) ; `rom/build.py` (debugfs, no root, tested on fake ext4) ; `rom/flash.sh` (guarded)
 boot = kept as is => current magisk-patched boot = root by default ; no repatch need
 todo: `logo.bin` mini ; remove.txt final @ phase 1 ; java need `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` (25 breaks gradle)
-! brick recovery = mtkclient | sp flash tool + backup imgs ; flash.sh needs adb => no help if no boot
+! brick recovery = fastboot | intel flash tool + backup imgs ; flash.sh needs adb => no help if no boot ; check fastboot before flash
 
 ## phase 0 = offline (no tablet, no nas)
 add: tablet settings in roundabout = `roundabout/system/*` (started: `SystemAccess.kt`)

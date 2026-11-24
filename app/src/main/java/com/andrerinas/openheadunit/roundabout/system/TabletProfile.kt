@@ -7,6 +7,7 @@ import com.andrerinas.openheadunit.utils.Settings as Oh
 // best cfg for prestigio `PMT3797` (mt8321 ~quad a7, 1 gb, 1280x800 ~7", 5.1) as car headunit
 // run @ setup done + "apply tablet profile" ; ! off main thread
 object TabletProfile {
+    const val HOME_ZONE = "Europe/Rome"
 
     fun apply(context: Context) {
         applyApp(Oh(context))
@@ -30,8 +31,8 @@ object TabletProfile {
         s.showOverLockScreen = false
         s.startInFullscreenMode = true
         s.showToastMessages = false
-        // usb cable first ; start on plug, back on reconnect
-        if (s.primaryConnection == Oh.ConnectionKind.UNSET) s.primaryConnection = Oh.ConnectionKind.USB_CABLE
+        // start on plug, back on reconnect
+        // ! no primaryConnection write <- it hides settings groups ; modes = setup aa step
         s.autoStartOnUsb = true
         s.usbConnectOnPlugIn = true
         s.autoConnectLastSession = true
@@ -65,7 +66,9 @@ object TabletProfile {
         DisplayPanel.animations(c, "0.5")
         // network time + zone
         sys.putGlobal(c, Settings.Global.AUTO_TIME, "1")
-        sys.putGlobal(c, Settings.Global.AUTO_TIME_ZONE, "1")
+        // zone from network = sim only ; tablet = no sim => fixed zone, car @ italy
+        sys.putGlobal(c, Settings.Global.AUTO_TIME_ZONE, "0")
+        if (java.util.TimeZone.getDefault().id != HOME_ZONE) sys.setTimeZone(c, HOME_ZONE)
         sys.putSystem(c, Settings.System.TIME_12_24, "24")
         // landscape lock
         sys.putSystem(c, Settings.System.ACCELEROMETER_ROTATION, "0")
