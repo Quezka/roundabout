@@ -3,12 +3,32 @@ goal: tablet `PMT3797` = headunit only ; stock-based rom ; roundabout = only ui
 branch = `rom` @ `Quezka/roundabout` ; wait user go before each phase
 ! no flash before backup @ nas + checked
 
+## rule = no root need
+roundabout @ `/system/priv-app` => signature|system perms -> api direct ; no su @ runtime
+`SystemAccess` = api first (+ reflection hidden api) ; su = fallback only @ dev install
+rom first boot -> roundabout self: overscan + grant listener/accessibility/admin + rotation lock
+signature-only perms (`CLEAR_APP_USER_DATA` ...) -> need platform key ; `ro.build.tags` = `test-keys` ? => sign roundabout w/ aosp platform key + `android.uid.system` ; else su fallback | skip
+root = rom default: boot img = magisk-patched ; magisk app = system app ; superuser toast = none ; only for maintenance
+
 ## phase 0 = offline (no tablet, no nas)
 add: tablet settings in roundabout = `roundabout/system/*` (started: `SystemAccess.kt`)
 sections: wifi ; bluetooth ; display (brightness, timeout, stay on charging) ; sound (* streams) ; date + time + zone ; apps (open, stop, clear, rm, disable) ; roundabout access (grant all) ; about + storage ; power (reboot, off) ; developer (adb on/off)
 activity catch `android.settings.*` intents <- stock settings app = rm
 manifest add: `WRITE_SECURE_SETTINGS` `SET_TIME` `SET_TIME_ZONE` `REBOOT` `DELETE_PACKAGES` `BLUETOOTH_PRIVILEGED` ; priv-app => granted ; else su fallback
 rail settings btn -> roundabout settings ; new row "Tablet" -> tablet settings
+add: oobe = roundabout first boot wizard ; replace stock setupwizard (rm @ rom) ; same ui as roundabout (dark, accent `#FF7A1A`, manrope, big touch, no keyboard where possible)
+oobe steps:
+  1 welcome: mini wings anim + "Roundabout" ; tap = go
+  2 language: big list (it, en, ...) -> `LocalePicker.updateLocale` reflection (`CHANGE_CONFIGURATION`)
+  3 wifi: scan list + password ; skip ok (aa wireless need phone hotspot | tablet ap later)
+  4 time: auto (network) on default ; zone list, default `Europe/Rome` ; 24h default
+  5 phone: bluetooth pair phone (big code confirm) ; skip ok
+  6 android auto: usb | wireless pick -> test connect ; show phone steps (enable aa, dev settings if need) ; skip ok
+  7 car: dial pick (speed | analog | digital) ; favorites pick (maps, music) ; units km/h
+  8 done: summary + "Start" -> home
+oobe extra: grants = silent (priv-app) => no permission screens ; rail hidden during oobe ; back btn = prev step ; progress dots
+oobe state: pref `rb-oobe-done` ; settings row "Run setup again" ; skip all = long-press welcome (dev)
+oobe vs oh `OnboardingActivity` (auto-optimize) -> run inside step 6 | after done ; no double wizard
 add: `rom/backup.sh` `rom/unpack.sh` `rom/build.sh` `rom/flash.sh` ; `rom/keep.txt` ; `rom/remove.txt`
 need host tools: `simg2img` `make_ext4fs` | `mke2fs`+`e2fsdroid` ; `mtkclient` ; `unpackbootimg`/`magiskboot`
 test: unit tests pass ; apk @ tablet later
@@ -17,6 +37,7 @@ test: unit tests pass ; apk @ tablet later
 read: `ro.board.platform` `ro.hardware` cpuinfo ram ; `/proc/partitions` ; `/dev/block/platform/*/by-name/*` | `/proc/dumchar_info` (mtk old)
 read: `pm list packages -f -s` ; `pm list packages -d` ; `ls /system/app /system/priv-app` ; `getprop` full -> `rom/device/`
 check: gms present ? ; webview pkg ; ime pkg ; magisk ver + `boot` patched
+check: `ro.build.tags` + `ro.build.type` ; platform cert = aosp test key ? (`/system/framework/framework-res.apk` cert sha vs aosp `platform.x509.pem`)
 check: bootloader unlock state ; `fastboot` reachable ? ; mtk brom (vol key + usb) reachable via `mtkclient` ?
 
 ## phase 2 = backup -> nas
@@ -38,11 +59,12 @@ add: bootanimation mini -> `/system/media/bootanimation.zip` (=> magisk module `
 add: `logo.bin` mini (mtk logo tool) <- bootloader + kernel logo
 cfg default: `settings` defaults via `/system/etc/` init script | first-boot script = overscan, rotation lock, grant all, systemui gone
 repack same fs size + same label + selinux contexts (`file_contexts` from boot ramdisk)
-boot: keep magisk-patched boot | repatch ; optional `init.rc` service = first-boot script
+boot: stock boot -> `magiskboot` patch @ laptop (same magisk ver) => root default ; magisk apk -> `/system/app/Magisk` + magisk db: superuser notify = none
+no first-boot root script need <- roundabout priv-app does cfg itself
 
 ## phase 4 = flash (user go only)
 flash `system` (+ `logo`) via `dd` @ recovery | `mtkclient w` | sp flash tool ; no preloader touch
-first boot: wipe dalvik ; check roundabout = home ; aa usb + wifi ; volume ; brightness ; rail ; boot anim
+first boot: wipe dalvik ; oobe * steps ; check roundabout = home ; aa usb + wifi ; volume ; brightness ; rail ; boot anim
 fail -> restore `system.img` from nas backup
 
 ## phase 5 = after

@@ -643,18 +643,19 @@ class RoundaboutRailService : Service() {
             @Suppress("DEPRECATION")
             val rotation = wm.defaultDisplay.rotation
             val px = railPx(context)
-            val spec = when (rotation) {
-                Surface.ROTATION_90 -> "0,$px,0,0"
-                Surface.ROTATION_270 -> "0,0,0,$px"
+            val box = when (rotation) {
+                Surface.ROTATION_90 -> intArrayOf(0, px, 0, 0)
+                Surface.ROTATION_270 -> intArrayOf(0, 0, 0, px)
                 // portrait (boot, before landscape lock) -> keep what is set
                 else -> return
             }
-            // su once per spec <- each su call = magisk toast ; overscan survives reboots
+            val spec = box.joinToString(",")
+            // once per spec <- overscan survives reboots ; rom = priv-app api, no su
             val prefs = context.getSharedPreferences(Settings.PREFS_NAME, Context.MODE_PRIVATE)
             if (prefs.getString(OVERSCAN_KEY, null) == spec) return
             Thread {
                 try {
-                    val ok = Runtime.getRuntime().exec(arrayOf("su", "-c", "wm overscan $spec")).waitFor() == 0
+                    val ok = com.andrerinas.openheadunit.roundabout.system.SystemAccess.setOverscan(box[0], box[1], box[2], box[3])
                     if (ok) prefs.edit().putString(OVERSCAN_KEY, spec).apply()
                 } catch (e: Exception) { }
             }.start()

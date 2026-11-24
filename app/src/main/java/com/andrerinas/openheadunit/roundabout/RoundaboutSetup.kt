@@ -13,6 +13,17 @@ object RoundaboutSetup {
 
     fun migrate(context: Context, settings: Settings) {
         val prefs = context.getSharedPreferences(Settings.PREFS_NAME, Context.MODE_PRIVATE)
+        // rom: priv-app => listener + accessibility + admin on by itself, every start ; no su
+        if (com.andrerinas.openheadunit.roundabout.system.SystemAccess.privileged(context)) {
+            val app = context.applicationContext
+            Thread {
+                val sys = com.andrerinas.openheadunit.roundabout.system.SystemAccess
+                sys.grantAll(app)
+                // landscape lock = rom default ; no adb step after flash
+                sys.putSystem(app, android.provider.Settings.System.ACCELEROMETER_ROTATION, "0")
+                sys.putSystem(app, android.provider.Settings.System.USER_ROTATION, "1")
+            }.start()
+        }
         // home media card shows android auto's track only through this session
         if (!prefs.getBoolean(MEDIA_SYNC_V4, false)) {
             settings.syncMediaSessionWithAaMetadata = true
