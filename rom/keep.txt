@@ -1,0 +1,22 @@
+# never removed even if listed in remove.txt (safety net)
+framework-res
+priv-app/SettingsProvider
+priv-app/MediaProvider
+priv-app/TelephonyProvider
+priv-app/DownloadProvider
+priv-app/DefaultContainerService
+priv-app/ExternalStorageProvider
+priv-app/PackageInstaller
+priv-app/Shell
+priv-app/Keyguard
+priv-app/ProxyHandler
+priv-app/FusedLocation
+priv-app/TeleService
+app/Bluetooth
+app/LatinIME
+app/webview
+app/CertInstaller
+app/KeyChain
+app/PacProcessor
+app/UserDictionaryProvider
+app/DocumentsUI

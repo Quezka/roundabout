@@ -890,6 +890,16 @@ class SettingsFragment : Fragment() {
         // --- General Settings ---
         items.add(SettingItem.CategoryHeader("general", R.string.category_general))
 
+        // roundabout: tablet settings (wifi, bluetooth, display, time, apps) <- stock settings app gone @ rom
+        items.add(SettingItem.SettingEntry(
+            stableId = "rbTablet",
+            nameResId = R.string.rb_sys_title,
+            value = getString(R.string.rb_sys_tablet_row),
+            onClick = { _ ->
+                startActivity(Intent(requireContext(), com.andrerinas.openheadunit.roundabout.system.TabletSettingsActivity::class.java))
+            }
+        ))
+
         // Auto-Optimize Wizard
         items.add(SettingItem.SettingEntry(
             stableId = "autoOptimize",

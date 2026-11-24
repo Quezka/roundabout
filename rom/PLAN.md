@@ -10,6 +10,17 @@ rom first boot -> roundabout self: overscan + grant listener/accessibility/admin
 signature-only perms (`CLEAR_APP_USER_DATA` ...) -> need platform key ; `ro.build.tags` = `test-keys` ? => sign roundabout w/ aosp platform key + `android.uid.system` ; else su fallback | skip
 root = rom default: boot img = magisk-patched ; magisk app = system app ; superuser toast = none ; only for maintenance
 
+## status 2026-11-24
+phase 0 = done ; apk builds ; unit tests `4937` pass ; untested @ tablet
+tablet settings = `roundabout/system/TabletSettingsActivity.kt` + `Panels.kt` + `MorePanels.kt` ; row "Tablet" @ roundabout settings general
+setup = `roundabout/setup/SetupActivity.kt` ; runs once before oh onboarding ; rail = clock only during setup
+best cfg = `roundabout/system/TabletProfile.kt` ; applied @ setup start + about -> "apply tablet profile"
+pairing dialog = `roundabout/system/BluetoothPairing.kt`
+scripts: `rom/backup.sh` (read only) ; `rom/build.py` (debugfs, no root, tested on fake ext4) ; `rom/flash.sh` (guarded)
+boot = kept as is => current magisk-patched boot = root by default ; no repatch need
+todo: `logo.bin` mini ; remove.txt final @ phase 1 ; java need `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` (25 breaks gradle)
+! brick recovery = mtkclient | sp flash tool + backup imgs ; flash.sh needs adb => no help if no boot
+
 ## phase 0 = offline (no tablet, no nas)
 add: tablet settings in roundabout = `roundabout/system/*` (started: `SystemAccess.kt`)
 sections: wifi ; bluetooth ; display (brightness, timeout, stay on charging) ; sound (* streams) ; date + time + zone ; apps (open, stop, clear, rm, disable) ; roundabout access (grant all) ; about + storage ; power (reboot, off) ; developer (adb on/off)

@@ -1575,6 +1575,12 @@ class MainActivity : BaseActivity() {
     }
 
     fun checkSetupFlow() {
+        // roundabout setup first ; it marks oh onboarding done => no second wizard
+        if (com.andrerinas.openheadunit.roundabout.setup.SetupActivity.needed(this)) {
+            startActivity(Intent(this, com.andrerinas.openheadunit.roundabout.setup.SetupActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            return
+        }
         val appSettings = Settings(this)
         // Show the intelligent onboarding wizard once whenever the stored version is
         // older than the current one (covers fresh installs and upgraders alike).

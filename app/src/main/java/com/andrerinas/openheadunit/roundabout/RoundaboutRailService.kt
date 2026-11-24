@@ -74,6 +74,9 @@ class RoundaboutRailService : Service() {
     private lateinit var contextIcon: ImageView
 
     private var volumePanel: View? = null
+    // setup running -> rail = clock only <- no way out of setup half done
+    private var railPanel: LinearLayout? = null
+    private val hiddenForSetup = mutableListOf<View>()
     private var volumeBar: SeekBar? = null
     private var volumeText: TextView? = null
     private var brightBar: SeekBar? = null
@@ -229,6 +232,7 @@ class RoundaboutRailService : Service() {
             background = ContextCompat.getDrawable(context, R.drawable.rb_rail_bg)
             setPadding(0, dp(14f), 0, dp(12f))
         }
+        railPanel = panel
         root.addView(panel, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT).apply {
             setMargins(dp(8f), dp(8f), dp(8f), dp(8f))
         })
@@ -466,6 +470,18 @@ class RoundaboutRailService : Service() {
             Place.HOME -> R.drawable.ic_apps to R.string.home_all_apps
             Place.PROJECTION -> R.drawable.rb_ic_aa_menu to R.string.exit_dialog_title
             Place.OURS, Place.OTHER -> R.drawable.rb_ic_back to R.string.back
+        }
+        val setup = top is com.andrerinas.openheadunit.roundabout.setup.SetupActivity
+        railPanel?.let { p ->
+            if (setup && hiddenForSetup.isEmpty()) {
+                for (i in 1 until p.childCount) p.getChildAt(i).takeIf { it.visibility == View.VISIBLE }?.let {
+                    it.visibility = View.INVISIBLE
+                    hiddenForSetup += it
+                }
+            } else if (!setup && hiddenForSetup.isNotEmpty()) {
+                hiddenForSetup.forEach { it.visibility = View.VISIBLE }
+                hiddenForSetup.clear()
+            }
         }
         contextIcon.setImageResource(icon)
         contextIcon.setColorFilter(color(R.color.rb_text))
