@@ -262,6 +262,9 @@ class SettingsActivity : BaseActivity() {
          * user would otherwise arrive at a list that does not contain the row they were sent for.
          */
         const val EXTRA_SEARCH_QUERY = "extra_search_query"
+
+        // roundabout: open the tablet tab on this section id (TabletSections) <- `android.settings.*`
+        const val EXTRA_TABLET_SECTION = "rb_tablet_section"
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

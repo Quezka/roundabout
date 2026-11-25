@@ -36,7 +36,18 @@ object SettingsCategoryIcons {
         "audio" to (R.drawable.ic_sym_volume_up to R.drawable.ic_sym_volume_up_fill),
         "backup" to (R.drawable.ic_sym_settings_backup_restore to R.drawable.ic_sym_settings_backup_restore_fill),
         "debug" to (R.drawable.ic_sym_bug_report to R.drawable.ic_sym_bug_report_fill),
-        "info" to (R.drawable.ic_sym_info to R.drawable.ic_sym_info_fill)
+        "info" to (R.drawable.ic_sym_info to R.drawable.ic_sym_info_fill),
+        // roundabout tablet tab
+        "tWifi" to (R.drawable.ic_sym_wifi to R.drawable.ic_sym_wifi_fill),
+        "tBluetooth" to (R.drawable.rb_sym_bluetooth to R.drawable.rb_sym_bluetooth),
+        "tDisplay" to (R.drawable.ic_sym_display_settings to R.drawable.ic_sym_display_settings_fill),
+        "tSound" to (R.drawable.ic_sym_volume_up to R.drawable.ic_sym_volume_up_fill),
+        "tTime" to (R.drawable.rb_sym_schedule to R.drawable.rb_sym_schedule),
+        "tLanguage" to (R.drawable.rb_sym_translate to R.drawable.rb_sym_translate),
+        "tApps" to (R.drawable.rb_sym_apps to R.drawable.rb_sym_apps),
+        "tAccess" to (R.drawable.rb_sym_shield to R.drawable.rb_sym_shield),
+        "tAbout" to (R.drawable.rb_sym_tablet to R.drawable.rb_sym_tablet),
+        "tPower" to (R.drawable.rb_sym_power to R.drawable.rb_sym_power)
     )
 
     @DrawableRes

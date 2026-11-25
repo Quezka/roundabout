@@ -152,6 +152,23 @@
             android:paddingBottom="24dp"
             android:scrollbars="vertical" />
 
+    <!-- roundabout: tablet tab content ; shown instead of the list -->
+    <ScrollView
+        android:id="@+id/settingsTabletHost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toEndOf="@id/settingsRail"
+        android:layout_toRightOf="@id/settingsRail"
+        android:layout_alignWithParentIfMissing="true"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingStart="@dimen/settings_content_padding_start"
+        android:paddingLeft="@dimen/settings_content_padding_start"
+        android:paddingEnd="@dimen/settings_content_padding_end"
+        android:paddingRight="@dimen/settings_content_padding_end"
+        android:paddingBottom="24dp"
+        android:visibility="gone" />
+
     </RelativeLayout>
 
 </LinearLayout>

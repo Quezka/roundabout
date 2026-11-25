@@ -163,8 +163,9 @@ class SetupActivity : BaseActivity() {
 
     private fun scrolled(): View {
         val col = ui.vertical().apply { setPadding(ui.dp(120f), ui.dp(12f), ui.dp(120f), ui.dp(24f)) }
-        col.addView(ui.title(getString(step.title)))
+        col.addView(ui.text(getString(step.title), 30f, strong = true).apply { setPadding(ui.dp(4f), ui.dp(4f), 0, ui.dp(16f)) })
         val content = ui.vertical()
+        ui.autoGroup(content)
         col.addView(content)
         when (step) {
             Step.LANGUAGE -> attach(LanguagePanel(ui) { recreate() }, content)

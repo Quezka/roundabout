@@ -397,6 +397,7 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         settings = App.provide(requireContext()).settings
+        restoredTabletSection = savedInstanceState?.getString(KEY_TABLET_SECTION)
 
         // Picking this app as home clears this screen before its Save, so a held role counts as on.
         val held = CarLauncherManager.isDefaultLauncher(requireContext())
@@ -457,6 +458,13 @@ class SettingsFragment : Fragment() {
                 outState.putParcelable("recycler_scroll", it)
             }
         }
+        tabletHost?.section?.let { outState.putString(KEY_TABLET_SECTION, it) }
+    }
+
+    override fun onDestroyView() {
+        tabletHost?.hide()
+        tabletHost = null
+        super.onDestroyView()
     }
 
     private fun reloadPendingStateFromSettings() {
@@ -889,16 +897,6 @@ class SettingsFragment : Fragment() {
 
         // --- General Settings ---
         items.add(SettingItem.CategoryHeader("general", R.string.category_general))
-
-        // roundabout: tablet settings (wifi, bluetooth, display, time, apps) <- stock settings app gone @ rom
-        items.add(SettingItem.SettingEntry(
-            stableId = "rbTablet",
-            nameResId = R.string.rb_sys_title,
-            value = getString(R.string.rb_sys_tablet_row),
-            onClick = { _ ->
-                startActivity(Intent(requireContext(), com.andrerinas.openheadunit.roundabout.system.TabletSettingsActivity::class.java))
-            }
-        ))
 
         // Auto-Optimize Wizard
         items.add(SettingItem.SettingEntry(
@@ -3110,10 +3108,15 @@ class SettingsFragment : Fragment() {
                 searchQuery = query
                 renderSettings()
             },
-            onRailCollapsedChanged = { settings.settingsRailCollapsed = it }
+            onRailCollapsedChanged = { settings.settingsRailCollapsed = it },
+            onTablet = { on -> if (!on) tabletHost?.hide() },
+            onTabletSection = { id -> tabletHost?.show(id) }
         )
+        tabletHost = view.findViewById<android.widget.ScrollView>(R.id.settingsTabletHost)
+            ?.let { com.andrerinas.openheadunit.roundabout.system.TabletHost(requireActivity(), it) }
         updateSaveButtonState()
         applyRequestedSearchQuery()
+        applyRequestedTabletSection(view)
     }
 
     /**
@@ -3124,6 +3127,18 @@ class SettingsFragment : Fragment() {
      * and leaving it on the intent would re-apply it on every rotation and recreate, overwriting
      * whatever the user had typed since.
      */
+    // roundabout: tablet tab from a system settings intent | kept over recreate (language change)
+    private var tabletHost: com.andrerinas.openheadunit.roundabout.system.TabletHost? = null
+    private var restoredTabletSection: String? = null
+
+    private fun applyRequestedTabletSection(view: View) {
+        val intent = activity?.intent
+        val asked = intent?.getStringExtra(SettingsActivity.EXTRA_TABLET_SECTION)
+        intent?.removeExtra(SettingsActivity.EXTRA_TABLET_SECTION)
+        val id = asked ?: restoredTabletSection ?: return
+        view.post { header?.openTablet(id) }
+    }
+
     private fun applyRequestedSearchQuery() {
         val intent = activity?.intent ?: return
         val query = intent.getStringExtra(SettingsActivity.EXTRA_SEARCH_QUERY)
@@ -5340,6 +5355,7 @@ class SettingsFragment : Fragment() {
     }
 
     companion object {
+        private const val KEY_TABLET_SECTION = "rb-tablet-section"
         private val SAVE_ITEM_ID = 1001
 
         /**

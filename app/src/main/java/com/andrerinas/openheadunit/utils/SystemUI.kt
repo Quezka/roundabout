@@ -300,6 +300,16 @@ object SystemUI {
             if (notesCanvas) HeadUnitScreenConfig.invalidateWindowMeasurement(owner)
         }
 
+        // roundabout: appcompat sub-decor pads the rail strip a 2nd time until stripRailInset runs
+        // -> root starts at 2x rail -> aa told 982 not 1131 -> touch off ; skip that layout
+        private fun railPaddedTwice(): Boolean {
+            val c = root.context
+            if (!com.andrerinas.openheadunit.roundabout.RoundaboutRailService.railReserved(c)) return false
+            val rail = com.andrerinas.openheadunit.roundabout.RoundaboutRailService.railPx(c)
+            val at = IntArray(2).also { root.getLocationOnScreen(it) }
+            return at[0] >= 2 * rail - 2
+        }
+
         private fun apply(insets: WindowInsetsCompat): WindowInsetsCompat {
             val policy = policy()
             val cutout = if (Build.VERSION.SDK_INT >= 28) WindowInsetsCompat.Type.displayCutout() else 0
@@ -312,7 +322,7 @@ object SystemUI {
             val raw = if (policy.automatic) Insets.NONE
                 else insets.getInsets(mask or WindowInsetsCompat.Type.ime())
             // roundabout rail overscan arrives as a left "bar" the decor already pads -> drop it
-            val rail = if (com.andrerinas.openheadunit.roundabout.RoundaboutRailService.running)
+            val rail = if (com.andrerinas.openheadunit.roundabout.RoundaboutRailService.railReserved(root.context))
                 com.andrerinas.openheadunit.roundabout.RoundaboutRailService.railPx(root.context) else 0
             val bars = if (rail > 0 && raw.left >= rail - 2) Insets.of(raw.left - rail, raw.top, raw.right, raw.bottom) else raw
             val manual = policy.manual
@@ -368,7 +378,7 @@ object SystemUI {
             val currentProjection = notesCanvas && activeObserver?.get() === this
             val changed = notify || delivered != layout
             val version = invalidationVersion
-            if (currentProjection && !sample.ime &&
+            if (currentProjection && !sample.ime && !railPaddedTwice() &&
                 (changed || !HeadUnitScreenConfig.isWindowMeasurementCurrent(owner))) {
                 HeadUnitScreenConfig.publishWindowGeometry(
                     owner, root.context, root.resources.displayMetrics, settings,

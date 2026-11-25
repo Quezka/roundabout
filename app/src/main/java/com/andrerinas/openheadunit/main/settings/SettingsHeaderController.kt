@@ -35,7 +35,10 @@ class SettingsHeaderController(
     private val onSave: () -> Unit,
     private val onTierChanged: (advanced: Boolean) -> Unit,
     private val onQueryChanged: (query: String) -> Unit,
-    private val onRailCollapsedChanged: (collapsed: Boolean) -> Unit
+    private val onRailCollapsedChanged: (collapsed: Boolean) -> Unit,
+    // roundabout: tablet tab -> rail = tablet sections ; content = panel host
+    private val onTablet: (on: Boolean) -> Unit = {},
+    private val onTabletSection: (id: String) -> Unit = {}
 ) {
     private val context: Context = root.context
     private val palette = SettingsPalette.from(context)
@@ -46,6 +49,11 @@ class SettingsHeaderController(
     private val tabGroup: MaterialButtonToggleGroup = root.findViewById(R.id.settingsTabGroup)
     private val tabBasic: MaterialButton = root.findViewById(R.id.tabBasic)
     private val tabAdvanced: MaterialButton = root.findViewById(R.id.tabAdvanced)
+    private val tabTablet: MaterialButton? = root.findViewById(R.id.tabTablet)
+    private val tabletHost: View? = root.findViewById(R.id.settingsTabletHost)
+    var tabletMode = false
+        private set
+    private var listCategories: List<SettingsCategory> = emptyList()
     private val searchBar: View = root.findViewById(R.id.settingsSearchBar)
     private val searchInput: EditText = root.findViewById(R.id.settingsSearch)
     private val searchClear: View = root.findViewById(R.id.settingsSearchClear)
@@ -119,6 +127,8 @@ class SettingsHeaderController(
     }
 
     fun submitCategories(categories: List<SettingsCategory>) {
+        listCategories = categories
+        if (tabletMode) return
         headerPositions = IntArray(categories.size) { categories[it].headerPosition }
         categoryAdapter.submit(categories)
         syncActiveCategory()
@@ -165,6 +175,8 @@ class SettingsHeaderController(
         tabGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
             updateTabIcons()
+            if (checkedId == R.id.tabTablet) { setTabletMode(true); return@addOnButtonCheckedListener }
+            if (tabletMode) setTabletMode(false)
             onTierChanged(checkedId == R.id.tabAdvanced)
         }
         searchInput.addTextChangedListener(object : TextWatcher {
@@ -212,7 +224,7 @@ class SettingsHeaderController(
             }
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (!categoryPinned) syncActiveCategory()
+                if (!categoryPinned && !tabletMode) syncActiveCategory()
             }
         })
     }
@@ -256,8 +268,45 @@ class SettingsHeaderController(
 
     // --- Tabs ---
 
+    /** roundabout: opens the tablet tab on [sectionId] (from a system settings intent). */
+    fun openTablet(sectionId: String?) {
+        if (tabTablet == null) return
+        if (!tabletMode) tabGroup.check(R.id.tabTablet)
+        val id = sectionId ?: return
+        categoryAdapter.setActive(id)
+        onTabletSection(id)
+    }
+
+    private fun setTabletMode(on: Boolean) {
+        if (on == tabletMode) return
+        tabletMode = on
+        if (on && searchExpanded) collapseSearch()
+        contentList.visibility = if (on) View.GONE else View.VISIBLE
+        tabletHost?.visibility = if (on) View.VISIBLE else View.GONE
+        // tablet changes apply at once => no search, reset, save
+        val edit = if (on) View.GONE else View.VISIBLE
+        resetButton.visibility = edit
+        saveButton.visibility = edit
+        if (searchInline) searchBar.visibility = edit else searchButton.visibility = edit
+        spacer?.visibility = if (on || !searchInline) View.VISIBLE else View.GONE
+        if (on) {
+            val sections = TabletSections.all.mapIndexed { i, sec -> SettingsCategory(sec.id, sec.label, i) }
+            headerPositions = IntArray(0)
+            categoryAdapter.submit(sections)
+            onTablet(true)
+            val first = sections.first().id
+            categoryAdapter.setActive(first)
+            onTabletSection(first)
+        } else {
+            onTablet(false)
+            headerPositions = IntArray(listCategories.size) { listCategories[it].headerPosition }
+            categoryAdapter.submit(listCategories)
+            syncActiveCategory()
+        }
+    }
+
     private fun updateTabIcons() {
-        for (tab in listOf(tabBasic, tabAdvanced)) {
+        for (tab in listOfNotNull(tabBasic, tabAdvanced, tabTablet)) {
             tab.icon = if (tabCheckIcon && tab.isChecked) {
                 SettingsDrawables.tinted(context, R.drawable.ic_sym_check, palette.onSecondaryContainer)
             } else {
@@ -269,6 +318,11 @@ class SettingsHeaderController(
     // --- Categories ---
 
     private fun jumpTo(category: SettingsCategory) {
+        if (tabletMode) {
+            categoryAdapter.setActive(category.id)
+            onTabletSection(category.id)
+            return
+        }
         categoryPinned = true
         categoryAdapter.setActive(category.id)
         (contentList.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(category.headerPosition, 0)

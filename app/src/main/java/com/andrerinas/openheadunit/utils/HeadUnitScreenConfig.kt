@@ -280,7 +280,7 @@ object HeadUnitScreenConfig {
             @Suppress("DEPRECATION")
             display.getRealSize(size)
             // roundabout rail = overscan strip on the left ; the screen android auto gets ends at it
-            val rail = if (com.andrerinas.openheadunit.roundabout.RoundaboutRailService.running) {
+            val rail = if (com.andrerinas.openheadunit.roundabout.RoundaboutRailService.railReserved(context)) {
                 com.andrerinas.openheadunit.roundabout.RoundaboutRailService.railPx(context)
             } else 0
             realW = size.x - rail

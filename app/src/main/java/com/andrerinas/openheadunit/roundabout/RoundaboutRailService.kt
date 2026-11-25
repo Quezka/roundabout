@@ -649,6 +649,11 @@ class RoundaboutRailService : Service() {
 
         fun railPx(c: Context): Int = dp(c, RAIL_DP)
 
+        // strip reserved = overscan set, service up or not <- aa can start @ boot before the rail
+        // (running flag only => aa measured strip twice -> wrong margins -> touch off)
+        fun railReserved(c: Context): Boolean = running ||
+            c.getSharedPreferences(Settings.PREFS_NAME, Context.MODE_PRIVATE).getString(OVERSCAN_KEY, null) != null
+
         fun start(context: Context) {
             try { context.startService(Intent(context, RoundaboutRailService::class.java)) } catch (e: Exception) { }
         }

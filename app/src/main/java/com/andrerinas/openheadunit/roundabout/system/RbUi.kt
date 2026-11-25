@@ -21,69 +21,151 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.andrerinas.openheadunit.R
+import com.andrerinas.openheadunit.main.settings.GroupPosition
+import com.andrerinas.openheadunit.main.settings.SettingsDrawables
+import com.andrerinas.openheadunit.main.settings.SettingsPalette
 
-// view kit for tablet settings + setup ; code-built <- one look, no xml per row
-// big + high contrast <- user vision ; touch >= 64dp <- car use
+// view kit for tablet settings + setup ; code-built
+// look = open headunit settings rows (palette, manrope semibold, joined rounded groups, m3 switch)
+// => tablet tab @ roundabout settings = same look as the rest
 class RbUi(val context: Context) {
 
     fun dp(v: Float): Int = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, context.resources.displayMetrics).toInt()
     fun color(id: Int) = ContextCompat.getColor(context, id)
+    private fun dimen(id: Int) = context.resources.getDimensionPixelSize(id)
+    private fun sp(id: Int) = context.resources.getDimension(id)
 
+    val palette: SettingsPalette by lazy { SettingsPalette.from(context) }
     val regular: Typeface? by lazy { font(R.font.manrope_medium) }
     val bold: Typeface? by lazy { font(R.font.manrope_bold) }
+    val semibold: Typeface? by lazy { font(R.font.manrope_semibold) }
     private fun font(id: Int): Typeface? = try { ResourcesCompat.getFont(context, id) } catch (e: Exception) { null }
 
-    fun rounded(fill: Int, radiusDp: Float = 18f, stroke: Int? = null) = GradientDrawable().apply {
+    fun rounded(fill: Int, radiusDp: Float = 16f, stroke: Int? = null) = GradientDrawable().apply {
         cornerRadius = dp(radiusDp).toFloat()
         setColor(fill)
         if (stroke != null) setStroke(dp(2f), stroke)
     }
 
     // ripple @ 5.0+ ; pressed tint below
-    fun touchable(fill: Int, radiusDp: Float = 18f): android.graphics.drawable.Drawable {
+    fun touchable(fill: Int, radiusDp: Float = 16f): android.graphics.drawable.Drawable {
         val shape = rounded(fill, radiusDp)
         if (Build.VERSION.SDK_INT < 21) return shape
-        return RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), shape, rounded(0xFFFFFFFF.toInt(), radiusDp))
+        return RippleDrawable(ColorStateList.valueOf(0x1FFFFFFF), shape, rounded(0xFFFFFFFF.toInt(), radiusDp))
     }
 
-    fun text(str: CharSequence, sizeSp: Float = 20f, strong: Boolean = false, muted: Boolean = false) = TextView(context).apply {
+    fun text(str: CharSequence, sizeSp: Float = 15f, strong: Boolean = false, muted: Boolean = false) = TextView(context).apply {
         text = str
         setTextSize(TypedValue.COMPLEX_UNIT_SP, sizeSp)
-        typeface = if (strong) bold else regular
-        setTextColor(color(if (muted) R.color.rb_muted else R.color.rb_text))
+        typeface = if (strong) semibold else regular
+        setTextColor(if (muted) palette.onSurfaceVariant else palette.onSurface)
     }
 
-    fun title(str: CharSequence) = text(str, 30f, strong = true).apply {
-        setPadding(0, dp(4f), 0, dp(16f))
+    // page title = settings section header (primary, small)
+    fun title(str: CharSequence) = TextView(context).apply {
+        text = str
+        typeface = semibold
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(R.dimen.settings_section_title_size))
+        setTextColor(palette.primary)
+        val pad = dimen(R.dimen.settings_row_padding_start)
+        setPadding(pad, dimen(R.dimen.settings_section_title_padding_top) + dimen(R.dimen.settings_section_spacing), pad,
+            dimen(R.dimen.settings_section_title_padding_bottom))
     }
 
-    fun header(str: CharSequence) = text(str.toString().uppercase(), 14f, strong = true).apply {
-        setTextColor(color(R.color.rb_accent))
-        letterSpacing = 0.08f
-        setPadding(dp(4f), dp(20f), 0, dp(8f))
+    // group label = settings subheader
+    fun header(str: CharSequence) = TextView(context).apply {
+        text = str.toString().uppercase()
+        typeface = semibold
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(R.dimen.settings_row_description_size))
+        setTextColor(palette.onSurfaceVariant)
+        val pad = dimen(R.dimen.settings_row_padding_start)
+        val v = dimen(R.dimen.settings_section_title_padding_bottom)
+        setPadding(pad, v + dimen(R.dimen.settings_section_spacing), pad, v)
     }
 
-    fun note(str: CharSequence) = text(str, 16f, muted = true).apply {
-        setPadding(dp(4f), dp(6f), dp(4f), dp(6f))
+    fun note(str: CharSequence) = TextView(context).apply {
+        text = str
+        typeface = regular
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(R.dimen.settings_row_description_size))
+        setTextColor(palette.onSurfaceVariant)
+        val pad = dimen(R.dimen.settings_row_padding_start)
+        setPadding(pad, dp(6f), pad, dp(6f))
     }
 
     fun vertical() = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
 
+    // rows join neighbours into one rounded card ; shape set by regroup
+    private val groupRows = java.util.WeakHashMap<View, Boolean>()
+    private val accented = java.util.WeakHashMap<View, Boolean>()
+
+    fun accent(row: View) { accented[row] = true; (row.parent as? ViewGroup)?.let { regroup(it) } }
+
     private fun rowBase(onClick: (() -> Unit)?) = LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
-        minimumHeight = dp(72f)
-        setPadding(dp(20f), dp(10f), dp(16f), dp(10f))
-        background = if (onClick != null) touchable(color(R.color.rb_card)) else rounded(color(R.color.rb_card))
-        if (onClick != null) setOnClickListener { onClick() }
+        minimumHeight = dimen(R.dimen.settings_row_min_height)
+        val v = dimen(R.dimen.settings_row_padding_vertical)
+        setPadding(dimen(R.dimen.settings_row_padding_start), v, dp(16f), v)
+        background = SettingsDrawables.groupItem(context, palette, GroupPosition.SINGLE, sp(R.dimen.settings_group_radius))
+        if (onClick != null) { isClickable = true; setOnClickListener { onClick() } }
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            .apply { bottomMargin = dp(8f) }
+            .apply { bottomMargin = dp(2f) }
+        groupRows[this] = true
+    }
+
+    /** Joined-group corners for every row run in [container] (and nested lists). */
+    fun regroup(container: ViewGroup) {
+        val radius = sp(R.dimen.settings_group_radius)
+        val kids = (0 until container.childCount).map { container.getChildAt(it) }
+        kids.forEachIndexed { i, v ->
+            if (v.visibility == View.GONE) return@forEachIndexed
+            if (groupRows[v] != true) {
+                if (v is LinearLayout && v.orientation == LinearLayout.VERTICAL) regroup(v)
+                return@forEachIndexed
+            }
+            fun isRow(j: Int) = kids.getOrNull(j)?.let { groupRows[it] == true && it.visibility != View.GONE } == true
+            val pos = GroupPosition.of(isFirst = !isRow(i - 1), isLast = !isRow(i + 1))
+            val fill = if (accented[v] == true) palette.secondaryContainer else palette.container
+            v.background = SettingsDrawables.groupItem(context, palette, pos, radius, fill)
+            (v.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                val gap = if (pos == GroupPosition.BOTTOM || pos == GroupPosition.SINGLE) dimen(R.dimen.settings_section_spacing) else dp(2f)
+                if (lp.bottomMargin != gap) { lp.bottomMargin = gap; v.layoutParams = lp }
+            }
+        }
+    }
+
+    /** Keeps [container] grouped as panels add and drop rows. */
+    fun autoGroup(container: ViewGroup) {
+        var queued = false
+        val run = Runnable { queued = false; regroup(container) }
+        container.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+            override fun onChildViewAdded(parent: View?, child: View?) {
+                if (child is LinearLayout && groupRows[child] != true) autoGroup(child)
+                if (!queued) { queued = true; container.post(run) }
+            }
+            override fun onChildViewRemoved(parent: View?, child: View?) {
+                if (!queued) { queued = true; container.post(run) }
+            }
+        })
     }
 
     private fun labels(titleStr: CharSequence, sub: CharSequence?): Pair<LinearLayout, TextView?> {
         val col = vertical()
-        col.addView(text(titleStr, 20f, strong = true))
-        val subView = sub?.let { text(it, 16f, muted = true) }
+        col.addView(TextView(context).apply {
+            text = titleStr
+            typeface = semibold
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(R.dimen.settings_row_title_size))
+            setTextColor(palette.onSurface)
+        })
+        val subView = sub?.let { str ->
+            TextView(context).apply {
+                text = str
+                typeface = regular
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(R.dimen.settings_row_description_size))
+                setTextColor(palette.onSurfaceVariant)
+                setPadding(0, dp(2f), 0, 0)
+            }
+        }
         subView?.let { col.addView(it) }
         col.layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         return col to subView
@@ -91,11 +173,12 @@ class RbUi(val context: Context) {
 
     class Row(val view: LinearLayout, val sub: TextView?)
 
+    // clickable + no trailing => chevron (like settings sub-screens)
     fun row(titleStr: CharSequence, sub: CharSequence? = null, trailing: View? = null, onClick: (() -> Unit)? = null): Row {
         val r = rowBase(onClick)
         val (col, subView) = labels(titleStr, sub)
         r.addView(col)
-        trailing?.let { r.addView(it) }
+        (trailing ?: if (onClick != null) chevron() else null)?.let { r.addView(it) }
         return Row(r, subView)
     }
 
@@ -103,12 +186,12 @@ class RbUi(val context: Context) {
     fun toggle(titleStr: CharSequence, sub: CharSequence?, checked: Boolean, onChange: (Boolean) -> Unit): LinearLayout {
         val sw = SwitchCompat(context).apply {
             isChecked = checked
-            thumbTintList = ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
-                intArrayOf(color(R.color.rb_accent), color(R.color.rb_muted)))
-            trackTintList = ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
-                intArrayOf(color(R.color.rb_accent_container), color(R.color.rb_container_highest)))
+            trackDrawable = SettingsDrawables.switchTrack(context, palette)
+            thumbDrawable = SettingsDrawables.switchThumb(context, palette)
+            background = null
             setOnCheckedChangeListener { _, on -> onChange(on) }
-            scaleX = 1.3f; scaleY = 1.3f
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                .apply { leftMargin = dp(16f) }
         }
         val r = row(titleStr, sub, sw) { sw.toggle() }
         r.view.tag = sw
@@ -117,15 +200,17 @@ class RbUi(val context: Context) {
 
     fun slider(titleStr: CharSequence, max: Int, value: Int, onChange: (Int) -> Unit): LinearLayout {
         val box = rowBase(null).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.NO_GRAVITY }
-        box.addView(text(titleStr, 20f, strong = true))
+        box.addView(labels(titleStr, null).first.apply { layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT) })
         box.addView(SeekBar(context).apply {
             this.max = max
             progress = value
-            progressDrawable = ContextCompat.getDrawable(context, R.drawable.rb_volume_track)
-            thumb = ContextCompat.getDrawable(context, R.drawable.rb_volume_thumb)
-            if (Build.VERSION.SDK_INT >= 21) splitTrack = false
-            setPadding(dp(14f), 0, dp(14f), 0)
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(44f)).apply { topMargin = dp(8f) }
+            if (Build.VERSION.SDK_INT >= 21) {
+                progressTintList = ColorStateList.valueOf(palette.primary)
+                thumbTintList = ColorStateList.valueOf(palette.primary)
+                progressBackgroundTintList = ColorStateList.valueOf(palette.containerHighest)
+            }
+            minimumHeight = dp(40f)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4f) }
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(s: SeekBar?, p: Int, fromUser: Boolean) { if (fromUser) onChange(p) }
                 override fun onStartTrackingTouch(s: SeekBar?) {}
@@ -139,39 +224,49 @@ class RbUi(val context: Context) {
     fun choice(options: List<String>, selected: Int, onPick: (Int) -> Unit): LinearLayout {
         val bar = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(64f)).apply { bottomMargin = dp(8f) }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(48f)).apply { bottomMargin = dp(8f) }
         }
         val pills = options.mapIndexed { i, label ->
-            text(label, 18f, strong = true).apply {
+            text(label, 15f, strong = true).apply {
                 gravity = Gravity.CENTER
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                     .apply { if (i > 0) leftMargin = dp(8f) }
             }
         }
         fun paint(sel: Int) = pills.forEachIndexed { i, p ->
-            p.background = touchable(color(if (i == sel) R.color.rb_accent else R.color.rb_card))
-            p.setTextColor(color(if (i == sel) R.color.rb_on_accent else R.color.rb_text))
+            p.background = touchable(if (i == sel) palette.primary else palette.container, 24f)
+            p.setTextColor(if (i == sel) palette.onPrimary else palette.onSurface)
         }
         pills.forEachIndexed { i, p -> p.setOnClickListener { paint(i); onPick(i) }; bar.addView(p) }
         paint(selected)
         return bar
     }
 
-    fun button(label: CharSequence, primary: Boolean = true, onClick: () -> Unit) = text(label, 20f, strong = true).apply {
+    fun button(label: CharSequence, primary: Boolean = true, onClick: () -> Unit) = text(label, 16f, strong = true).apply {
         gravity = Gravity.CENTER
-        minimumHeight = dp(64f)
-        minWidth = dp(180f)
-        setPadding(dp(28f), 0, dp(28f), 0)
-        background = touchable(color(if (primary) R.color.rb_accent else R.color.rb_container_high), 32f)
-        setTextColor(color(if (primary) R.color.rb_on_accent else R.color.rb_text))
+        minimumHeight = dp(52f)
+        minWidth = dp(160f)
+        setPadding(dp(24f), 0, dp(24f), 0)
+        background = touchable(if (primary) palette.primary else palette.containerHigh, 26f)
+        setTextColor(if (primary) palette.onPrimary else palette.onSurface)
         setOnClickListener { onClick() }
     }
 
     fun spacer(hDp: Float) = View(context).apply { layoutParams = LinearLayout.LayoutParams(1, dp(hDp)) }
 
-    fun chevron() = text("›", 34f, muted = true).apply { setPadding(dp(12f), 0, dp(4f), 0) }
+    fun chevron() = android.widget.ImageView(context).apply {
+        setImageDrawable(SettingsDrawables.tinted(context, R.drawable.ic_sym_chevron_right, palette.onSurfaceVariant))
+        val size = dimen(R.dimen.settings_row_icon_size)
+        layoutParams = LinearLayout.LayoutParams(size, size).apply { leftMargin = dp(8f) }
+    }
 
-    fun value(str: CharSequence) = text(str, 18f, muted = true).apply { setPadding(dp(12f), 0, dp(4f), 0) }
+    fun value(str: CharSequence) = TextView(context).apply {
+        text = str
+        typeface = regular
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(R.dimen.settings_row_value_size))
+        setTextColor(palette.onSurfaceVariant)
+        setPadding(dp(16f), 0, dp(4f), 0)
+    }
 
     fun ask(titleStr: CharSequence, message: CharSequence?, ok: CharSequence, onOk: () -> Unit) {
         AlertDialog.Builder(context, R.style.DarkAlertDialog)
@@ -193,8 +288,8 @@ class RbUi(val context: Context) {
     fun password(titleStr: CharSequence, onOk: (String) -> Unit) {
         val field = EditText(context).apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-            setTextColor(color(R.color.rb_text))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+            setTextColor(palette.onSurface)
             setSingleLine()
         }
         val wrap = FrameLayout(context).apply { setPadding(dp(24f), dp(8f), dp(24f), 0); addView(field) }

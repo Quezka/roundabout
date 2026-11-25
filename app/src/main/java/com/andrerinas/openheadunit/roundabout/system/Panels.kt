@@ -34,6 +34,7 @@ abstract class Panel(protected val ui: RbUi) {
 
     fun attach(into: LinearLayout) {
         root = into
+        ui.autoGroup(into)
         start()
         render()
     }
@@ -371,7 +372,7 @@ class LanguagePanel(ui: RbUi, private val onPicked: () -> Unit = {}) : Panel(ui)
                 apply(context, tag)
                 onPicked()
             }
-            if (on) row.view.background = ui.rounded(ui.color(R.color.rb_accent_container))
+            if (on) ui.accent(row.view)
             root.addView(row.view)
         }
     }

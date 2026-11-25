@@ -27,4 +27,14 @@
         android:minWidth="@dimen/settings_tab_min_width"
         android:text="@string/settings_tab_advanced" />
 
+    <!-- roundabout: tablet = system settings (wifi, bluetooth, display ...) in the same screen -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/tabTablet"
+        style="@style/SettingsTab"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/settings_tab_height"
+        android:layout_weight="1"
+        android:minWidth="@dimen/settings_tab_min_width"
+        android:text="@string/rb_sys_title" />
+
 </com.google.android.material.button.MaterialButtonToggleGroup>
