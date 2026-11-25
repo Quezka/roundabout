@@ -32,11 +32,16 @@ LIVE=$(a exec-out su -c "$BB readlink -f \$($BB awk '\$2==\"/system\" {print \$1
 [ "$LIVE" = "$DEV" ] || { echo "system dev mismatch: backup $DEV live $LIVE" >&2; exit 1; }
 [ -n "$DEV" ] || { echo "no system dev in list.txt" >&2; exit 1; }
 echo "target: $DEV"
+# battery >= 30% <- power loss mid-dd = no system
+LVL=$(a shell dumpsys battery | tr -d '\r' | grep -m1 ' level:' | tr -dc 0-9)
+[ "${LVL:-0}" -ge 30 ] || { echo "battery ${LVL:-?}% < 30%: charge first" >&2; exit 1; }
 
 # image via /data/local/tmp (no /sdcard on this tablet) ; system mounted ro => write under it, reboot right after
 TMP=/data/local/tmp/rb-system.img
 a push "$IMG" $TMP
 LOCAL=$(sha256sum "$IMG" | cut -d' ' -f1)
+# framework stop => no reads of /system mid-write ; adbd + su stay up
+a exec-out su -c "stop"
 a exec-out su -c "dd if=$TMP of=$DEV bs=1048576 && sync"
 BACK=$(a exec-out su -c "dd if=$DEV bs=1048576 2>/dev/null" | sha256sum | cut -d' ' -f1)
 if [ "$LOCAL" != "$BACK" ]; then
