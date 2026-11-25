@@ -17,6 +17,16 @@ partitions = `/dev/block/platform/soc0/e0000000.noc/by-name/ImcPartIDnnn` ; syst
 no `/sdcard` path ; no awk/head/tar in toolbox -> `/data/adb/magisk/busybox`
 recovery path: intel flash tool | fastboot ? (check `adb reboot bootloader` @ phase 1) ; mtkclient = n/a
 setup + tablet settings = tested @ tablet ok
+boot = `ImcPartID071` ; recovery = `ImcPartID121` ; nvm (imei, calib) = `ImcPartID076` -> `/nvm_fs_partition`
+fastboot = no : `adb reboot bootloader` -> normal boot (tested 2026-11-25) ; unbrick = intel flash tool + stock `.fls` firmware (not found yet) | adb + su (adbd in boot ramdisk, keys @ /data) if system bootloops
+
+## status 2026-11-25
+backup = `rom/backup/2026-11-25_0302` (all 17 partitions, sums ok, nvm read twice) + copy `~/Backup/tablet-pmt3797/` ; nas = todo (unreachable)
+! backup includes userdata (`069`, 5 GB, private) <- ImcPartID names != `userdata` skip
+rom image = `rom/out/system.img` built from real dump ; e2fsck clean ; labels match stock (trailing NUL)
+remove = systemui, settings, launcher3, dialer, contacts, cell broadcast, camera2, downloads ui, partner bookmarks, musicfx, stresstest, backup confirm, shared storage backup
+keep = intel `ituxd` (thermal), vpn dialogs (oh dummy vpn), contacts provider + telecom (bt phonebook)
+next = user go -> `rom/flash.sh --backup rom/backup/2026-11-25_0302 --i-have-a-backup` ; first find stock `.fls` firmware for a second unbrick path
 
 ## status 2026-11-24
 phase 0 = done ; apk builds ; unit tests `4937` pass ; untested @ tablet

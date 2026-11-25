@@ -20,3 +20,12 @@ app/KeyChain
 app/PacProcessor
 app/UserDictionaryProvider
 app/DocumentsUI
+# real dump 2026-11-25
+app/PackageInstaller
+app/WebViewGoogle
+app/CaptivePortalLogin
+priv-app/ituxd
+priv-app/VpnDialogs
+priv-app/ContactsProvider
+priv-app/Telecom
+priv-app/InputDevices

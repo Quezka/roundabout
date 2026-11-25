@@ -11,6 +11,8 @@ import argparse, os, shutil, subprocess, sys, tempfile, zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SYSTEM_LABEL = "u:object_r:system_file:s0"
+# stock xattrs end with a NUL byte -> same bytes here ; debugfs reads it from a file
+LABEL_FILE = None
 
 def run(*cmd, **kw):
     return subprocess.run(cmd, check=True, text=True, capture_output=True, **kw).stdout
@@ -55,11 +57,11 @@ def lines(name):
 def put(path, src, mode="0100644"):
     # owner root:root, label system_file
     return [f"write {src} {path}", f"sif {path} mode {mode}", f"sif {path} uid 0", f"sif {path} gid 0",
-            f"ea_set {path} security.selinux {SYSTEM_LABEL}"]
+            f"ea_set -f {LABEL_FILE} {path} security.selinux"]
 
 def mkdir(path):
     return [f"mkdir {path}", f"sif {path} mode 040755", f"sif {path} uid 0", f"sif {path} gid 0",
-            f"ea_set {path} security.selinux {SYSTEM_LABEL}"]
+            f"ea_set -f {LABEL_FILE} {path} security.selinux"]
 
 def main():
     ap = argparse.ArgumentParser()
@@ -82,6 +84,10 @@ def main():
     shutil.copyfile(src, img)
     log = open(os.path.join(HERE, "out", "build.log"), "w")
     work = tempfile.mkdtemp()
+    global LABEL_FILE
+    LABEL_FILE = os.path.join(work, "label")
+    with open(LABEL_FILE, "wb") as f:
+        f.write(SYSTEM_LABEL.encode() + b"\0")
 
     keep = set(lines("keep.txt"))
     cmds = []
@@ -101,7 +107,7 @@ def main():
     # abi from the dump: intel sofia = x86 -> lib/x86 ; arm -> lib/arm
     abi = "x86"
     gp = os.path.join(a.backup, "info", "getprop.txt")
-    if os.path.exists(gp) and "[ro.product.cpu.abi]: [x86]" not in open(gp).read():
+    if os.path.exists(gp) and "[ro.product.cpu.abi]: [x86]" not in open(gp, errors="replace").read():
         abi = "armeabi-v7a"
     libdir = "x86" if abi == "x86" else "arm"
     with zipfile.ZipFile(a.apk) as z:
@@ -124,12 +130,12 @@ def main():
     # build.prop: no nav bar, no setup wizard
     prop = os.path.join(work, "build.prop")
     subprocess.run(["debugfs", "-R", f"dump /build.prop {prop}", img], check=True, capture_output=True)
-    text = open(prop).read().splitlines()
+    text = open(prop, encoding="utf-8", errors="surrogateescape").read().splitlines()
     # ! no hwrotation touch <- panel orientation
     want = {"qemu.hw.mainkeys": "1", "ro.setupwizard.mode": "DISABLED"}
     out_lines = [l for l in text if l.split("=", 1)[0] not in want]
     out_lines += ["", "# roundabout"] + [f"{k}={v}" for k, v in want.items()]
-    open(prop, "w").write("\n".join(out_lines) + "\n")
+    open(prop, "w", encoding="utf-8", errors="surrogateescape").write("\n".join(out_lines) + "\n")
     cmds += ["rm /build.prop"] + put("/build.prop", prop, "0100644")
 
     r = debugfs(img, cmds, log)

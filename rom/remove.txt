@@ -1,53 +1,18 @@
 # stock apps out of /system ; one dir per line (relative to /system)
-# missing dir = skipped ; final list after phase 1 (`backup/*/info/system-apps.txt`)
+# from the real dump 2026-11-25 (`backup/*/info/system-apps.txt`) ; missing dir = skipped
 # ui we replace
 priv-app/SystemUI
 priv-app/Settings
-priv-app/Launcher3
 app/Launcher3
-priv-app/SetupWizard
-priv-app/Provision
-# phone / messages / contacts (tablet = car screen)
+# phone / contacts ui (providers stay: bluetooth phonebook + telecom need them)
 priv-app/Dialer
 priv-app/Contacts
-priv-app/Mms
-priv-app/InCallUI
-app/Stk
-# media + misc apps
-app/Browser
-app/Gallery2
-app/Music
-app/MusicFX
-app/VideoPlayer
-app/FMRadio
-app/SoundRecorder
-app/DeskClock
-app/Calendar
-priv-app/CalendarProvider
-app/Email
-app/Exchange2
-app/Calculator
-app/QuickSearchBox
-app/LiveWallpapersPicker
-app/Galaxy4
-app/HoloSpiralWallpaper
-app/MagicSmokeWallpapers
-app/NoiseField
-app/PhaseBeam
-app/BasicDreams
-app/PrintSpooler
-app/HTMLViewer
+priv-app/CellBroadcastReceiver
+# misc
 app/Camera2
-app/FileManager
-app/Note
-app/Todos
 app/DownloadProviderUi
+app/PartnerBookmarksProvider
+priv-app/MusicFX
+priv-app/StressTest
 priv-app/BackupRestoreConfirmation
 priv-app/SharedStorageBackup
-# mediatek extras ; check each @ phase 1 ! some = radio deps
-app/MtkFloatMenu
-app/MTKThermalManager
-app/SchedulePowerOnOff
-app/YGPS
-app/EngineerMode
-priv-app/EngineerMode
