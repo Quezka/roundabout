@@ -29,7 +29,7 @@ oobe no show <- `rb-setup-done` set by dev tests ; about -> run setup again
 dev apk = `/data/app` update over priv-app (same sig) ; next system flash only if need
 stale dalvik-cache of removed apps = rm ok ; odex in image = ok (`build.py --odex`) ; reflash #2 = ok, verified on device (sha match)
 roundabout stays `/data/app` update over priv-app <- `pm uninstall` blocked by device admin ; still SYSTEM + PRIVILEGED => ok
-gestures + tablet tab = installed, untested by hand (aa in front)
+gestures = ok @ tablet (user 2026-11-25) ; tablet tab = untested by hand
 out/system.img rebuilt w/ apk `2d602904`
 backup = `rom/backup/2026-11-25_0302` (all 17 partitions, sums ok, nvm read twice) + copy `~/Backup/tablet-pmt3797/` ; nas = no (user: laptop only)
 ! backup includes userdata (`069`, 5 GB, private) <- ImcPartID names != `userdata` skip
