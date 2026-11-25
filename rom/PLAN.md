@@ -20,7 +20,14 @@ setup + tablet settings = tested @ tablet ok
 boot = `ImcPartID071` ; recovery = `ImcPartID121` ; nvm (imei, calib) = `ImcPartID076` -> `/nvm_fs_partition`
 fastboot = no : `adb reboot bootloader` -> normal boot (tested 2026-11-25) ; unbrick = intel flash tool + stock `.fls` firmware (not found yet) | adb + su (adbd in boot ramdisk, keys @ /data) if system bootloops
 
-## status 2026-11-25
+## status 2026-11-25 (flashed)
+flash = ok 08:46 (system + splash) ; boots ; roundabout = home ; aa ok
+tablet settings = tab `Tablet` @ roundabout settings (beside basic/advanced) ; `TabletSettingsActivity` = trampoline for `android.settings.*`
+aa touch off fix <- rail strip counted twice @ boot (`railReserved` + skip double-padded layout)
+oobe no show <- `rb-setup-done` set by dev tests ; about -> run setup again
+dev apk = `/data/app` update over priv-app (same sig) ; next system flash only if need
+todo: rm stale dalvik-cache of removed apps ; odex roundabout in image <- first-boot optimize screen
+out/system.img rebuilt w/ apk `2d602904`
 backup = `rom/backup/2026-11-25_0302` (all 17 partitions, sums ok, nvm read twice) + copy `~/Backup/tablet-pmt3797/` ; nas = no (user: laptop only)
 ! backup includes userdata (`069`, 5 GB, private) <- ImcPartID names != `userdata` skip
 rom image = `rom/out/system.img` built from real dump ; e2fsck clean ; labels match stock (trailing NUL)
