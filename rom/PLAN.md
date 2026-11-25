@@ -21,6 +21,7 @@ boot = `ImcPartID071` ; recovery = `ImcPartID121` ; nvm (imei, calib) = `ImcPart
 fastboot = no : `adb reboot bootloader` -> normal boot (tested 2026-11-25) ; unbrick = intel flash tool + stock `.fls` firmware (not found yet) | adb + su (adbd in boot ramdisk, keys @ /data) if system bootloops
 
 ## status 2026-11-25 (flashed)
+idea later = wired aa + car power (aca cable test, then hw mod) -> memory `roundabout-wired-aa-mod`
 flash = ok 08:46 (system + splash) ; boots ; roundabout = home ; aa ok
 tablet settings = tab `Tablet` @ roundabout settings (beside basic/advanced) ; `TabletSettingsActivity` = trampoline for `android.settings.*`
 aa touch off fix <- rail strip counted twice @ boot (`railReserved` + skip double-padded layout)
