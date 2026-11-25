@@ -27,7 +27,9 @@ tablet settings = tab `Tablet` @ roundabout settings (beside basic/advanced) ; `
 aa touch off fix <- rail strip counted twice @ boot (`railReserved` + skip double-padded layout)
 oobe no show <- `rb-setup-done` set by dev tests ; about -> run setup again
 dev apk = `/data/app` update over priv-app (same sig) ; next system flash only if need
-todo: rm stale dalvik-cache of removed apps ; odex roundabout in image <- first-boot optimize screen
+stale dalvik-cache of removed apps = rm ok ; odex in image = ok (`build.py --odex`) ; reflash #2 = ok, verified on device (sha match)
+roundabout stays `/data/app` update over priv-app <- `pm uninstall` blocked by device admin ; still SYSTEM + PRIVILEGED => ok
+gestures + tablet tab = installed, untested by hand (aa in front)
 out/system.img rebuilt w/ apk `2d602904`
 backup = `rom/backup/2026-11-25_0302` (all 17 partitions, sums ok, nvm read twice) + copy `~/Backup/tablet-pmt3797/` ; nas = no (user: laptop only)
 ! backup includes userdata (`069`, 5 GB, private) <- ImcPartID names != `userdata` skip
