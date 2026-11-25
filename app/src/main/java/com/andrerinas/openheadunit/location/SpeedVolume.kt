@@ -22,10 +22,35 @@ class SpeedVolume(private val context: Context) {
     /** Steps currently added on top of the driver's own level. */
     private var steps = 0
 
+    // roundabout: steps also on disk <- a kill or power cut mid-drive left them on for good,
+    // and each drive added more => media volume crept to max. Next start takes them back off.
+    private val prefs by lazy { context.getSharedPreferences(com.andrerinas.openheadunit.utils.Settings.PREFS_NAME, Context.MODE_PRIVATE) }
+    private var leftoverChecked = false
+
+    private fun remember() {
+        prefs.edit().putInt(KEY_STEPS, steps).putBoolean(KEY_ON_PHONE, onPhone).apply()
+    }
+
+    /** Steps a previous run left on this head unit's stream come off once, before any new one. */
+    private fun dropLeftover() {
+        if (leftoverChecked) return
+        leftoverChecked = true
+        val left = prefs.getInt(KEY_STEPS, 0)
+        if (left <= 0) return
+        // phone steps cannot come back: that link is gone
+        if (!prefs.getBoolean(KEY_ON_PHONE, false)) {
+            onPhone = false
+            repeat(left) { step(raise = false) }
+            AppLog.i("SpeedVolume: took $left leftover step(s) off the head unit")
+        }
+        prefs.edit().remove(KEY_STEPS).remove(KEY_ON_PHONE).apply()
+    }
+
     /** Where [steps] went, so they come back off the same place even if the setting changes. */
     private var onPhone = false
 
     fun onFix(location: Location) {
+        dropLeftover()
         if (!location.hasSpeed()) return
         val settings = component.settings
         val speedKmh = location.speed * 3.6f
@@ -35,6 +60,7 @@ class SpeedVolume(private val context: Context) {
         val raise = target > steps
         if (!step(raise)) return
         steps += if (raise) 1 else -1
+        remember()
         AppLog.i("SpeedVolume: ${speedKmh.toInt()} km/h, +$steps step(s) on the ${if (onPhone) "phone" else "head unit"}")
     }
 
@@ -43,8 +69,10 @@ class SpeedVolume(private val context: Context) {
      * already gone - but a session normally ends parked, where they have come off already.
      */
     fun reset() {
+        dropLeftover()
         if (!onPhone) repeat(steps) { step(raise = false) }
         steps = 0
+        remember()
     }
 
     /** One volume step; false when it could not be applied, so it is not counted. */
@@ -73,5 +101,11 @@ class SpeedVolume(private val context: Context) {
             AppLog.w("SpeedVolume: stream $stream refused the volume step: ${e.message}")
             false
         }
+    }
+
+    private companion object {
+        // "pending-" prefix = left out of a saved tablet profile
+        const val KEY_STEPS = "pending-speed-volume-steps"
+        const val KEY_ON_PHONE = "pending-speed-volume-on-phone"
     }
 }
