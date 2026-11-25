@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # write rom/out/system.img to the tablet ; ! only after backup.sh ok (laptop copy)
 # boot partition untouched => current magisk-patched boot stays => root by default
-# use: rom/flash.sh --backup rom/backup/<date> --i-have-a-backup
+# use: rom/flash.sh --backup rom/backup/<date> --i-have-a-backup [--splash]
+# --splash = + boot logo `out/splash.img` (rom/logo.py) -> `ImcPartID013`
 set -euo pipefail
 ADB="${ADB:-$HOME/Android/Sdk/platform-tools/adb}"
 SERIAL="${SERIAL:-PMP270262005418}"
-BACKUP=""; SURE=0
+BACKUP=""; SURE=0; SPLASH=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --backup) BACKUP="$2"; shift ;;
     --i-have-a-backup) SURE=1 ;;
+    --splash) SPLASH=1 ;;
     *) echo "unknown arg: $1" >&2; exit 2 ;;
   esac
   shift
@@ -51,5 +53,23 @@ if [ "$LOCAL" != "$BACK" ]; then
   exit 1
 fi
 a shell su -c "rm $TMP"
+
+if [ $SPLASH = 1 ]; then
+  SIMG="$HERE/out/splash.img"; SSTOCK="$BACKUP/ImcPartID013.img"
+  SDEV=$(awk '$1=="ImcPartID013" {print $2}' "$BACKUP/info/list.txt")
+  [ -f "$SIMG" ] && [ -n "$SDEV" ] && [ "$(stat -c %s "$SIMG")" = "$(stat -c %s "$SSTOCK")" ] || { echo "splash skip: no img | dev | size" >&2; SPLASH=0; }
+fi
+if [ $SPLASH = 1 ]; then
+  echo "splash: $SDEV"
+  STMP=/data/local/tmp/rb-splash.img
+  a push "$SIMG" $STMP
+  a exec-out su -c "dd if=$STMP of=$SDEV bs=1048576 && sync"
+  if [ "$(sha256sum "$SIMG" | cut -d' ' -f1)" != "$(a exec-out su -c "dd if=$SDEV bs=1048576 2>/dev/null" | sha256sum | cut -d' ' -f1)" ]; then
+    echo "! splash read-back differs ; restoring stock splash" >&2
+    a push "$SSTOCK" $STMP
+    a exec-out su -c "dd if=$STMP of=$SDEV bs=1048576 && sync"
+  fi
+  a shell su -c "rm $STMP"
+fi
 echo "flash ok ; rebooting"
 a reboot

@@ -26,7 +26,8 @@ backup = `rom/backup/2026-11-25_0302` (all 17 partitions, sums ok, nvm read twic
 rom image = `rom/out/system.img` built from real dump ; e2fsck clean ; labels match stock (trailing NUL)
 remove = systemui, settings, launcher3, dialer, contacts, cell broadcast, camera2, downloads ui, partner bookmarks, musicfx, stresstest, backup confirm, shared storage backup
 keep = intel `ituxd` (thermal), vpn dialogs (oh dummy vpn), contacts provider + telecom (bt phonebook)
-next = user go -> `rom/flash.sh --backup rom/backup/2026-11-25_0302 --i-have-a-backup` ; first find stock `.fls` firmware for a second unbrick path
+splash = `ImcPartID013` (`!SPLASH!` 800x1280 rgba @ `512`) ; `rom/logo.py` -> `out/splash.img` (mini) ; flash.sh `--splash`
+next = user go -> `rom/flash.sh --backup rom/backup/2026-11-25_0302 --i-have-a-backup --splash` ; tablet = usb need ; then find stock `.fls` firmware for a second unbrick path
 
 ## status 2026-11-24
 phase 0 = done ; apk builds ; unit tests `4937` pass ; untested @ tablet
@@ -36,7 +37,7 @@ best cfg = `roundabout/system/TabletProfile.kt` ; applied @ setup start + about 
 pairing dialog = `roundabout/system/BluetoothPairing.kt`
 scripts: `rom/backup.sh` (read only) ; `rom/build.py` (debugfs, no root, tested on fake ext4) ; `rom/flash.sh` (guarded)
 boot = kept as is => current magisk-patched boot = root by default ; no repatch need
-todo: `logo.bin` mini ; remove.txt final @ phase 1 ; java need `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` (25 breaks gradle)
+remove.txt final @ phase 1 ; java need `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` (25 breaks gradle)
 ! brick recovery = fastboot | intel flash tool + backup imgs ; flash.sh needs adb => no help if no boot ; check fastboot before flash
 
 ## phase 0 = offline (no tablet, no nas)
