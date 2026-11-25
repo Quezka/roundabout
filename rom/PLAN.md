@@ -1,7 +1,7 @@
 ## roundabout rom = plan
 goal: tablet `PMT3797` = headunit only ; stock-based rom ; roundabout = only ui
 branch = `rom` @ `Quezka/roundabout` ; wait user go before each phase
-! no flash before backup @ nas + checked
+! no flash before backup @ laptop + checked ; nas = no need (user 2026-11-25)
 
 ## rule = no root need
 roundabout @ `/system/priv-app` => signature|system perms -> api direct ; no su @ runtime
@@ -21,7 +21,7 @@ boot = `ImcPartID071` ; recovery = `ImcPartID121` ; nvm (imei, calib) = `ImcPart
 fastboot = no : `adb reboot bootloader` -> normal boot (tested 2026-11-25) ; unbrick = intel flash tool + stock `.fls` firmware (not found yet) | adb + su (adbd in boot ramdisk, keys @ /data) if system bootloops
 
 ## status 2026-11-25
-backup = `rom/backup/2026-11-25_0302` (all 17 partitions, sums ok, nvm read twice) + copy `~/Backup/tablet-pmt3797/` ; nas = todo (unreachable)
+backup = `rom/backup/2026-11-25_0302` (all 17 partitions, sums ok, nvm read twice) + copy `~/Backup/tablet-pmt3797/` ; nas = no (user: laptop only)
 ! backup includes userdata (`069`, 5 GB, private) <- ImcPartID names != `userdata` skip
 rom image = `rom/out/system.img` built from real dump ; e2fsck clean ; labels match stock (trailing NUL)
 remove = systemui, settings, launcher3, dialer, contacts, cell broadcast, camera2, downloads ui, partner bookmarks, musicfx, stresstest, backup confirm, shared storage backup
@@ -94,8 +94,8 @@ no first-boot root script need <- roundabout priv-app does cfg itself
 ## phase 4 = flash (user go only)
 flash `system` (+ `logo`) via `dd` @ recovery | `mtkclient w` | sp flash tool ; no preloader touch
 first boot: wipe dalvik ; oobe * steps ; check roundabout = home ; aa usb + wifi ; volume ; brightness ; rail ; boot anim
-fail -> restore `system.img` from nas backup
+fail -> restore `system.img` from laptop backup
 
 ## phase 5 = after
-push branch `rom` ; scripts + lists in repo ; imgs != git (nas only)
+push branch `rom` ; scripts + lists in repo ; imgs != git (laptop only)
 memory update ; old magisk modules rm if rom covers them

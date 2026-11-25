@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# write rom/out/system.img to the tablet ; ! only after backup.sh + nas copy ok
+# write rom/out/system.img to the tablet ; ! only after backup.sh ok (laptop copy)
 # boot partition untouched => current magisk-patched boot stays => root by default
 # use: rom/flash.sh --backup rom/backup/<date> --i-have-a-backup
 set -euo pipefail
