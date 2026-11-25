@@ -50,6 +50,13 @@ class DisplayPanel(ui: RbUi) : Panel(ui) {
             ohSettings.externalPowerScreenOff = on
         })
 
+        // android 10 style edge gestures @ rail service
+        val prefs = context.getSharedPreferences(com.andrerinas.openheadunit.utils.Settings.PREFS_NAME, Context.MODE_PRIVATE)
+        root.addView(ui.header(s(R.string.rb_sys_gestures)))
+        root.addView(ui.toggle(s(R.string.rb_sys_gestures_on), s(R.string.rb_sys_gestures_sub),
+            prefs.getBoolean(com.andrerinas.openheadunit.roundabout.RoundaboutRailService.GESTURES_KEY, true)) { on ->
+            prefs.edit().putBoolean(com.andrerinas.openheadunit.roundabout.RoundaboutRailService.GESTURES_KEY, on).apply()
+        })
         root.addView(ui.header(s(R.string.rb_sys_animations)))
         val scale = Settings.Global.getFloat(context.contentResolver, Settings.Global.WINDOW_ANIMATION_SCALE, 1f)
         val sel = when { scale == 0f -> 0; scale < 1f -> 1; else -> 2 }

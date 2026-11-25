@@ -2016,6 +2016,9 @@
     <string name="rb_sys_setup_again">Ripeti la configurazione</string>
     <string name="rb_sys_tablet_profile">Applica profilo tablet</string>
     <string name="rb_sys_tablet_profile_sub">Impostazioni migliori per questo tablet in auto</string>
+    <string name="rb_sys_gestures">Navigazione</string>
+    <string name="rb_sys_gestures_on">Navigazione con gesti</string>
+    <string name="rb_sys_gestures_sub">Scorri dal bordo sinistro o destro per tornare indietro, dal basso verso l\'alto per la home, dall\'alto verso il basso per volume e luminosità. Disattivata mentre è aperto Android Auto</string>
     <string name="rb_sys_profile_save">Salva le impostazioni attuali come profilo tablet</string>
     <string name="rb_sys_profile_save_sub">Applica profilo tablet e la configurazione useranno queste impostazioni</string>
     <string name="rb_sys_profile_save_sub_saved">Salvato. Salva di nuovo per sostituirlo</string>

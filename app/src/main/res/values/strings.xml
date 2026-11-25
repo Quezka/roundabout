@@ -2102,6 +2102,9 @@
     <string name="rb_sys_setup_again">Run setup again</string>
     <string name="rb_sys_tablet_profile">Apply tablet profile</string>
     <string name="rb_sys_tablet_profile_sub">Best settings for this tablet in a car</string>
+    <string name="rb_sys_gestures">Navigation</string>
+    <string name="rb_sys_gestures_on">Gesture navigation</string>
+    <string name="rb_sys_gestures_sub">Swipe in from the left or right edge to go back, up from the bottom for home, down from the top for volume and brightness. Off while Android Auto is on screen</string>
     <string name="rb_sys_profile_save">Save current settings as tablet profile</string>
     <string name="rb_sys_profile_save_sub">Apply tablet profile and setup then use these settings</string>
     <string name="rb_sys_profile_save_sub_saved">Saved. Save again to replace it</string>

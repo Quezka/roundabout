@@ -104,6 +104,7 @@ class RoundaboutRailService : Service() {
 
     private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == FAVORITES_KEY) renderApps()
+        if (key == GESTURES_KEY) renderGestures()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -119,6 +120,7 @@ class RoundaboutRailService : Service() {
             addRail()
             addCorners()
             addVolumePanel()
+            addGestures()
         } catch (e: Exception) {
             stopSelf()
             return
@@ -329,6 +331,67 @@ class RoundaboutRailService : Service() {
         }
     }
 
+    // --- gestures (android 10 style) ---
+    // strips @ app area edges: left/right swipe in = back ; bottom swipe up = home ; top swipe down = quick panel
+    // off @ projection (strips would eat aa edge taps) + setup + pref off
+    private class Strip(val v: View, val lp: WindowManager.LayoutParams, val touch: Boolean)
+    private val strips = mutableListOf<Strip>()
+
+    private fun addGestures() {
+        val s = screen()
+        val left = railPx(this)
+        val strip = dp(EdgeGesture.STRIP_DP)
+        val bubbleW = dp(EdgeGesture.BUBBLE_WINDOW_DP)
+        fun add(v: View, w: Int, h: Int, x: Int, y: Int, touch: Boolean) {
+            val lp = overlayParams(w, h, x, y, touchable = touch)
+            wm.addView(v, lp)
+            windows += v
+            strips += Strip(v, lp, touch)
+            pin(v, lp, x, y)
+        }
+        val leftBubble = EdgeBubble(this, fromLeft = true)
+        val rightBubble = EdgeBubble(this, fromLeft = false)
+        add(leftBubble, bubbleW, s.y, left, 0, touch = false)
+        add(rightBubble, bubbleW, s.y, s.x - bubbleW, 0, touch = false)
+        add(EdgeGesture(this, EdgeGesture.Side.LEFT, ::onGesture).apply { bubble = leftBubble }, strip, s.y, left, 0, touch = true)
+        add(EdgeGesture(this, EdgeGesture.Side.RIGHT, ::onGesture).apply { bubble = rightBubble }, strip, s.y, s.x - strip, 0, touch = true)
+        add(EdgeGesture(this, EdgeGesture.Side.BOTTOM, ::onGesture), s.x - left - 2 * strip, strip, left + strip, s.y - strip, touch = true)
+        add(EdgeGesture(this, EdgeGesture.Side.TOP, ::onGesture), s.x - left - 2 * strip, strip, left + strip, 0, touch = true)
+        renderGestures()
+    }
+
+    private fun gesturesOn(): Boolean =
+        getSharedPreferences(Settings.PREFS_NAME, MODE_PRIVATE).getBoolean(GESTURES_KEY, true) &&
+            place != Place.PROJECTION && ourTop !is com.andrerinas.openheadunit.roundabout.setup.SetupActivity
+
+    // hidden = gone + untouchable <- a gone view still leaves its window catching touches
+    private fun renderGestures() {
+        val on = gesturesOn()
+        strips.forEach { st ->
+            val vis = if (on) View.VISIBLE else View.GONE
+            if (st.v.visibility == vis) return@forEach
+            st.v.visibility = vis
+            if (st.touch) {
+                st.lp.flags = if (on) st.lp.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+                    else st.lp.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                try { wm.updateViewLayout(st.v, st.lp) } catch (e: Exception) { }
+            }
+        }
+    }
+
+    private fun onGesture(side: EdgeGesture.Side) {
+        com.andrerinas.openheadunit.utils.AppLog.i("RoundaboutRail: gesture $side, place=$place")
+        when (side) {
+            EdgeGesture.Side.BOTTOM -> openHome()
+            EdgeGesture.Side.TOP -> showVolume()
+            else -> {
+                val ours = ourTop
+                if (ours != null && place != Place.HOME) ours.onBackPressed()
+                else if (place != Place.HOME && !NavAccessibility.back()) openAccessibilitySettings()
+            }
+        }
+    }
+
     // volume + brightness ; opens from the rail, a volume key or a volume change ; hides by itself
     private fun addVolumePanel() {
         val s = screen()
@@ -483,6 +546,7 @@ class RoundaboutRailService : Service() {
                 hiddenForSetup.clear()
             }
         }
+        renderGestures()
         contextIcon.setImageResource(icon)
         contextIcon.setColorFilter(color(R.color.rb_text))
         contextButton.contentDescription = getString(label)
@@ -615,6 +679,7 @@ class RoundaboutRailService : Service() {
         private const val CORNER_DP = 18f
         private const val VOLUME_HIDE_MS = 3000L
         private const val FAVORITES_KEY = "home-favorite-apps"
+        const val GESTURES_KEY = "rb-gestures"
         // hidden framework broadcast ; still sent on 5.x
         private const val VOLUME_CHANGED = "android.media.VOLUME_CHANGED_ACTION"
         private const val EXTRA_STREAM = "android.media.EXTRA_VOLUME_STREAM_TYPE"
