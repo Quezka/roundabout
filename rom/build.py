@@ -4,7 +4,9 @@
 Works on a copy of the raw ext4 system.img with debugfs (no root, no loop mount),
 so file owners, modes and SELinux labels of everything else stay as they were.
 
-use: rom/build.py --backup rom/backup/<date> --apk app/build/.../roundabout.apk [--bootanim file.zip]
+use: rom/build.py --backup rom/backup/<date> --apk app/build/.../roundabout.apk [--bootanim file.zip] [--odex out/Roundabout.odex]
+odex = dex2oat on the tablet for this exact apk (dex-location = system path) -> no "optimizing apps" @ first boot
+  adb push apk /data/local/tmp/rb.apk ; su -c "dex2oat --dex-file=/data/local/tmp/rb.apk --dex-location=/system/priv-app/Roundabout/Roundabout.apk --oat-file=/data/local/tmp/Roundabout.odex --instruction-set=x86"
 out: rom/out/system.img + rom/out/build.log
 """
 import argparse, os, shutil, subprocess, sys, tempfile, zipfile
@@ -68,6 +70,10 @@ def main():
     ap.add_argument("--backup", required=True)
     ap.add_argument("--apk", required=True)
     ap.add_argument("--bootanim")
+    ap.add_argument("--odex")
+    # saved tablet profile -> /system/etc/roundabout/profile.json ; get: settings -> tablet -> about -> save, then
+    # adb exec-out su -c "cat /data/data/io.github.quezka.roundabout/files/tablet-profile.json" > rom/out/profile.json
+    ap.add_argument("--profile")
     a = ap.parse_args()
 
     for tool in ("debugfs", "e2fsck"):
@@ -120,6 +126,19 @@ def main():
                     f.write(z.read(n))
                 cmds += put(f"{base}/lib/{libdir}/{os.path.basename(n)}", out)
     print(f"add {base} + {len(libs)} libs")
+    # prebuilt oat @ <dir>/<isa>/<name>.odex ; ! must match this apk (dex checksum) else art ignores it
+    if a.odex:
+        isa = "x86" if abi == "x86" else "arm"
+        cmds += mkdir(f"{base}/{isa}")
+        cmds += put(f"{base}/{isa}/Roundabout.odex", os.path.abspath(a.odex))
+        print(f"add {base}/{isa}/Roundabout.odex")
+
+    if a.profile:
+        if exists(img, "/etc/roundabout"):
+            cmds += rm_tree(img, "/etc/roundabout")
+        cmds += mkdir("/etc/roundabout")
+        cmds += put("/etc/roundabout/profile.json", os.path.abspath(a.profile))
+        print("add /etc/roundabout/profile.json")
 
     if a.bootanim:
         if exists(img, "/media/bootanimation.zip"):

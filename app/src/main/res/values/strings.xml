@@ -2102,6 +2102,12 @@
     <string name="rb_sys_setup_again">Run setup again</string>
     <string name="rb_sys_tablet_profile">Apply tablet profile</string>
     <string name="rb_sys_tablet_profile_sub">Best settings for this tablet in a car</string>
+    <string name="rb_sys_profile_save">Save current settings as tablet profile</string>
+    <string name="rb_sys_profile_save_sub">Apply tablet profile and setup then use these settings</string>
+    <string name="rb_sys_profile_save_sub_saved">Saved. Save again to replace it</string>
+    <string name="rb_sys_profile_save_ask">Roundabout and tablet settings are saved as they are now. Phone pairings and Wi-Fi Direct keys are left out.</string>
+    <string name="rb_sys_profile_save_ok">Save</string>
+    <string name="rb_sys_profile_saved">Tablet profile saved</string>
     <string name="rb_sys_tablet_profile_ask">Video, audio, connection, screen and time settings go back to the best values for this tablet.</string>
     <string name="rb_sys_apply">Apply</string>
     <string name="rb_sys_power">Power</string>

@@ -234,6 +234,14 @@ class AboutPanel(ui: RbUi) : Panel(ui) {
                 bg({ TabletProfile.apply(context) })
             }
         }.view)
+        root.addView(ui.row(s(R.string.rb_sys_profile_save), s(if (TabletProfile.hasSaved(context)) R.string.rb_sys_profile_save_sub_saved else R.string.rb_sys_profile_save_sub), ui.chevron()) {
+            ui.ask(s(R.string.rb_sys_profile_save), s(R.string.rb_sys_profile_save_ask), s(R.string.rb_sys_profile_save_ok)) {
+                bg({ TabletProfile.save(context) }, {
+                    android.widget.Toast.makeText(context, s(R.string.rb_sys_profile_saved), android.widget.Toast.LENGTH_SHORT).show()
+                    render()
+                })
+            }
+        }.view)
     }
 
     private fun gb(bytes: Long) = String.format("%.1f GB", bytes / 1_073_741_824.0)
