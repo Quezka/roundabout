@@ -21,6 +21,8 @@ import com.andrerinas.openheadunit.R
 class PairingReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ACTION) return
+        // pair screen open -> answers itself
+        if (PairPhoneActivity.current?.get()?.onPairingRequest(intent) == true) return
         if (stockSettingsPresent(context) && !SystemAccess.privileged(context)) return
         context.startActivity(Intent(context, PairingActivity::class.java)
             .putExtras(intent)

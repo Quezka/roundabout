@@ -39,12 +39,17 @@
             android:textColor="@color/rb_muted"
             android:textSize="16sp" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal">
+
         <!-- what the dial shows: speedometer | clocks -->
         <FrameLayout
             android:id="@+id/rb_drive_widget"
             android:layout_width="64dp"
             android:layout_height="52dp"
-            android:layout_marginTop="14dp"
             android:background="@drawable/rb_rail_btn"
             android:clickable="true"
             android:contentDescription="@string/rb_widget_pick"
@@ -58,6 +63,41 @@
                 android:src="@drawable/rb_ic_tune"
                 android:tint="@color/rb_text" />
         </FrameLayout>
+
+        <!-- one-button pair -> PairPhoneActivity -->
+        <LinearLayout
+            android:id="@+id/rb_pair_phone"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/rb_rail_btn"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="16dp"
+            android:paddingRight="18dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_phone"
+                android:tint="@color/rb_text" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:fontFamily="@font/manrope_bold"
+                android:maxLines="1"
+                android:text="@string/rb_pair_button"
+                android:textColor="@color/rb_text"
+                android:textSize="16sp" />
+        </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <com.andrerinas.openheadunit.roundabout.SpeedGaugeView

@@ -615,6 +615,14 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
 
+        <activity
+            android:name="com.andrerinas.openheadunit.roundabout.system.PairPhoneActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+
         <receiver
             android:name="com.andrerinas.openheadunit.roundabout.system.PairingReceiver"
             android:exported="true"

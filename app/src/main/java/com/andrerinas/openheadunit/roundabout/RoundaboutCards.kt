@@ -29,6 +29,9 @@ class RoundaboutCards(private val root: View) {
         gauge?.unit = ctx.getString(R.string.rb_speed_unit)
         gauge?.mode = loadWidget()
         drive?.findViewById<View>(R.id.rb_drive_widget)?.setOnClickListener { pickWidget(it) }
+        drive?.findViewById<View>(R.id.rb_pair_phone)?.setOnClickListener {
+            com.andrerinas.openheadunit.roundabout.system.PairPhoneActivity.open(ctx)
+        }
         media?.let { m ->
             m.findViewById<View>(R.id.rb_media_prev)?.setOnClickListener { watcher.send(MediaAction.PREVIOUS) }
             m.findViewById<View>(R.id.rb_media_toggle)?.setOnClickListener { watcher.send(MediaAction.TOGGLE) }
